@@ -4,6 +4,34 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 10: Criação das Skills (Copywriting & Admin), Landing Page de Recepção & Painel Administrativo de Gestão Global
+**Data:** 20/09/2026  
+**Status:** Concluído, Validado e Comitado
+
+### 1. Criação das Skills Locais
+- **Skill 1 (`.agents/skills/copywriting-familiar/SKILL.md`):**
+  - Diretrizes e framework de copywriting e arquitetura de conteúdo voltadas para produtos familiares, mães, pais e cuidadores.
+  - Personas, tom de voz sereno e refinado, fórmulas PAS/AIDA humanizadas e auditoria de microcopy.
+- **Skill 2 (`.agents/skills/boas-praticas-de-admin/SKILL.md`):**
+  - Padrões de engenharia para criação de dashboards administrativos SaaS, métricas de observabilidade, trilha de auditoria (5 Ws), controle de permissões (RBAC) e relatórios executivos.
+
+### 2. Página de Recepção / Landing Page (`LandingReceptionView.tsx`)
+- **Acolhimento Editorial:** Apresentação clara e poética do *Refúgio Familiar* inspirada em papelaria de luxo.
+- **Hero & CTAs de Alta Conexão:** *"Criar Meu Espaço Familiar Grátis"*, *"Entrar na Minha Conta"* e *"Experimentar Demonstração (1 Toque)"*.
+- **Cards Interativos dos 4 Pilares:** *Saúde & Cartão SOS (1 Toque)*, *Escola & Mochila Pronta*, *Soberania & Custo Zero (.ODS / .ZIP)* e *Memórias & Obras de Arte*.
+- **Depoimentos Emocionais & Acesso ao Admin:** Integração fluida com as contas de demonstração e link direto para o painel administrativo.
+
+### 3. Painel Administrativo & Trilha de Auditoria (`AdminDashboardModal.tsx` & `adminService.ts`)
+- **Métricas & KPIs em Tempo Real:** Total de contas registradas, perfis de crianças assistidas, taxa de adesão a medicamentos (96.4%), prontidão de fichas SOS (100%) e integridade de módulos.
+- **Gestão de Usuários & RBAC:** Tabela pesquisável com papéis (*Mamãe*, *Papai*, *Administrador*, *Cuidador*), provedores de login (*Google*, *Apple*, *E-mail*), alteração dinâmica de papéis e botão de simulação de sessão de suporte.
+- **Trilha de Auditoria Imutável (5 Ws):** Quem (Ator), Ação Realizada, Módulo Afetado, Timestamp e Detalhes do evento.
+- **Exportação Executiva em Formato Aberto:** Botão para download do relatório administrativo completo em planilha aberta (`.ODS`).
+
+### 4. Integração no `App.tsx` & `PlannerHeader.tsx`
+- Roteamento inteligente: Página de Recepção pública quando não logado -> Portal de Login/Cadastro/OAuth -> Planner Principal -> Painel de Administração disponível universalmente.
+
+---
+
 ## 📅 Registro 9: Exportação de Planilhas em Formato Aberto (ODS / XLSX / CSV) & Download de Imagens em Pastas (.ZIP)
 **Data:** 20/09/2026  
 **Status:** Concluído, Validado e Comitado

@@ -26,10 +26,12 @@ export const AUTH_CONFIG = {
     'Avós',
     'Cuidador(a)',
     'Tio(a)',
+    'Administrador(a)',
     'Outro',
   ] as const,
   storageKeys: {
     session: 'refugio_familiar_user_session',
     usersDatabase: 'refugio_familiar_registered_users',
+    auditLogs: 'refugio_familiar_audit_logs',
   },
 };

@@ -253,7 +253,7 @@ export interface DocumentFile {
   description?: string;
 }
 
-export type UserRole = 'Mamãe' | 'Papai' | 'Avós' | 'Cuidador(a)' | 'Tio(a)' | 'Outro';
+export type UserRole = 'Mamãe' | 'Papai' | 'Avós' | 'Cuidador(a)' | 'Tio(a)' | 'Administrador(a)' | 'Outro';
 
 export interface UserSession {
   id: string;
@@ -264,5 +264,18 @@ export interface UserSession {
   authProvider: 'email' | 'google' | 'apple' | 'guest';
   createdAt: string;
   lastLoginAt: string;
+  isAdmin?: boolean;
 }
+
+export interface AuditLogItem {
+  id: string;
+  actorName: string;
+  actorEmail: string;
+  action: string;
+  targetModule: 'Autenticação' | 'Saúde' | 'Educação' | 'Cofre' | 'Soberania/ODS' | 'Família' | 'Admin';
+  timestamp: string;
+  status: 'Sucesso' | 'Alerta' | 'Bloqueado';
+  details: string;
+}
+
 

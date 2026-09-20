@@ -13,15 +13,21 @@ import { ProductivityView } from './views/ProductivityView';
 import { MemoriesView } from './views/MemoriesView';
 import { DocumentsVaultView } from './views/DocumentsVaultView';
 import { EmergencySOSModal } from './components/modules/EmergencySOSModal';
+import { LandingReceptionView } from './components/landing/LandingReceptionView';
 import { AuthPortal } from './components/auth/AuthPortal';
+import { AdminDashboardModal } from './components/admin/AdminDashboardModal';
 import { TabType } from './types';
 import { Heart, ShieldCheck, BookOpen } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, loginAsGuest } = useAuth();
   const { selectedChildId, setSelectedChildId, activeChild } = useFamily();
+  
   const [activeTab, setActiveTab] = useState<TabType>('today');
   const [isSOSOpen, setIsSOSOpen] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'landing' | 'auth'>('landing');
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
+  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
 
   // Loading state
   if (isLoading) {
@@ -36,16 +42,42 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Se não estiver logado, exibe a tela de Login / Cadastro / OAuth
+  // Se não estiver logado:
   if (!isAuthenticated) {
-    return <AuthPortal />;
+    return (
+      <>
+        {viewMode === 'landing' ? (
+          <LandingReceptionView
+            onOpenAuth={(mode) => {
+              setAuthInitialMode(mode);
+              setViewMode('auth');
+            }}
+            onEnterGuest={loginAsGuest}
+            onOpenAdmin={() => setIsAdminOpen(true)}
+          />
+        ) : (
+          <AuthPortal
+            initialMode={authInitialMode}
+            onBackToLanding={() => setViewMode('landing')}
+            onOpenAdmin={() => setIsAdminOpen(true)}
+          />
+        )}
+
+        {/* Global Admin Modal */}
+        <AdminDashboardModal
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
+        />
+      </>
+    );
   }
 
+  // Usuário Autenticado: Exibe o Planner Completo
   const activeChildName = activeChild ? activeChild.name : 'Família Unificada';
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col font-sans selection:bg-warm-peach selection:text-ink pb-20 md:pb-0 animate-in fade-in duration-300">
-      {/* Top Planner Header with Profile and SOS */}
+      {/* Top Planner Header with Profile, Admin and SOS */}
       <PlannerHeader
         onOpenSOS={() => setIsSOSOpen(true)}
         activeChildName={activeChildName}

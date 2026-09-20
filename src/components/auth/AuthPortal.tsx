@@ -15,12 +15,24 @@ import {
   AlertCircle,
   HelpCircle,
   KeyRound,
+  ArrowLeft,
+  Settings,
 } from 'lucide-react';
 
-export const AuthPortal: React.FC = () => {
+interface Props {
+  initialMode?: 'login' | 'register';
+  onBackToLanding?: () => void;
+  onOpenAdmin?: () => void;
+}
+
+export const AuthPortal: React.FC<Props> = ({
+  initialMode = 'login',
+  onBackToLanding,
+  onOpenAdmin,
+}) => {
   const { loginWithEmail, registerWithEmail, loginWithOAuth, loginAsGuest } = useAuth();
 
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -92,6 +104,30 @@ export const AuthPortal: React.FC = () => {
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-warm-peach/20 blur-3xl" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-warm-sage/15 blur-3xl" />
+      </div>
+
+      {/* Top Header Controls */}
+      <div className="max-w-md w-full mx-auto flex items-center justify-between text-xs font-sans text-ink-muted pt-1">
+        {onBackToLanding && (
+          <button
+            type="button"
+            onClick={onBackToLanding}
+            className="flex items-center gap-1.5 hover:text-warm-terracotta transition-colors px-2 py-1 rounded-xl hover:bg-canvas-sand"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Voltar à Apresentação</span>
+          </button>
+        )}
+        {onOpenAdmin && (
+          <button
+            type="button"
+            onClick={onOpenAdmin}
+            className="flex items-center gap-1 hover:text-warm-terracotta transition-colors px-2 py-1 rounded-xl hover:bg-canvas-sand ml-auto"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Painel Admin</span>
+          </button>
+        )}
       </div>
 
       {/* Top Brand Logo */}

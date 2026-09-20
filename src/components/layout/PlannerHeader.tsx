@@ -9,10 +9,12 @@ import {
   LogOut,
   Settings,
   FileSpreadsheet,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserProfileModal } from '../auth/UserProfileModal';
 import { DataExportModal } from '../modules/DataExportModal';
+import { AdminDashboardModal } from '../admin/AdminDashboardModal';
 
 interface Props {
   onOpenSOS: () => void;
@@ -24,6 +26,7 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on click outside
@@ -186,6 +189,18 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
                       type="button"
                       onClick={() => {
                         setIsUserMenuOpen(false);
+                        setIsAdminModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-sans text-ink hover:bg-canvas-sand rounded-xl transition-colors"
+                    >
+                      <Shield className="w-4 h-4 text-warm-terracotta" />
+                      <span>Painel Admin &amp; Auditoria</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
                         logout();
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 text-xs font-sans text-red-600 hover:bg-red-50 rounded-xl transition-colors mt-1"
@@ -213,6 +228,12 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
       <DataExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
+      />
+
+      {/* Admin Dashboard & Audit Modal */}
+      <AdminDashboardModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
       />
     </>
   );
