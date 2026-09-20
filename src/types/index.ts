@@ -122,6 +122,23 @@ export interface Medication {
   isActive: boolean;
   instructions: string;
   nextDoseTime: string;
+  reminderActive?: boolean;
+}
+
+export interface MedicalPrescription {
+  id: string;
+  childId: string;
+  title: string;
+  date: string;
+  doctorName?: string;
+  doctorCrm?: string;
+  clinic?: string;
+  medicationsSummary: string;
+  dosageInstructions?: string;
+  imageUrl?: string;
+  notes?: string;
+  syncedToVault: boolean;
+  linkedDocumentId?: string;
 }
 
 export interface MedicationLog {

@@ -8,6 +8,7 @@ import {
   ExtracurricularActivity,
   SocialEvent,
   Medication,
+  MedicalPrescription,
   MedicationLog,
   VaccineRecord,
   MedicalAppointment,
@@ -28,6 +29,7 @@ import {
   INITIAL_ACTIVITIES,
   INITIAL_SOCIAL_EVENTS,
   INITIAL_MEDICATIONS,
+  INITIAL_PRESCRIPTIONS,
   INITIAL_MED_LOGS,
   INITIAL_VACCINES,
   INITIAL_APPOINTMENTS,
@@ -68,10 +70,17 @@ interface FamilyContextType {
 
   // Health
   medications: Medication[];
+  prescriptions: MedicalPrescription[];
   medicationLogs: MedicationLog[];
   vaccines: VaccineRecord[];
   appointments: MedicalAppointment[];
   growthRecords: GrowthRecord[];
+  addMedication: (med: Omit<Medication, 'id'>) => void;
+  updateMedication: (med: Medication) => void;
+  deleteMedication: (id: string) => void;
+  toggleMedicationReminder: (medId: string) => void;
+  addPrescription: (presc: Omit<MedicalPrescription, 'id'>, syncToVault?: boolean) => void;
+  deletePrescription: (id: string) => void;
   logMedicationDose: (medicationId: string, caregiver: string, note?: string) => void;
   toggleVaccine: (vaccineId: string) => void;
   addGrowthRecord: (record: Omit<GrowthRecord, 'id'>) => void;
@@ -136,8 +145,11 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     loadOrSeed('social_events', INITIAL_SOCIAL_EVENTS)
   );
 
-  const [medications] = useState<Medication[]>(() =>
+  const [medications, setMedications] = useState<Medication[]>(() =>
     loadOrSeed('medications', INITIAL_MEDICATIONS)
+  );
+  const [prescriptions, setPrescriptions] = useState<MedicalPrescription[]>(() =>
+    loadOrSeed('prescriptions', INITIAL_PRESCRIPTIONS)
   );
   const [medicationLogs, setMedicationLogs] = useState<MedicationLog[]>(() =>
     loadOrSeed('medication_logs', INITIAL_MED_LOGS)
@@ -181,6 +193,14 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     localStorage.setItem(STORAGE_PREFIX + 'schedules', JSON.stringify(schedules));
   }, [schedules]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_PREFIX + 'medications', JSON.stringify(medications));
+  }, [medications]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_PREFIX + 'prescriptions', JSON.stringify(prescriptions));
+  }, [prescriptions]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_PREFIX + 'tasks', JSON.stringify(tasks));
@@ -304,6 +324,69 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSocialEvents((prev) =>
       prev.map((ev) => (ev.id === id ? { ...ev, confirmed: !ev.confirmed } : ev))
     );
+  };
+
+  const addMedication = (med: Omit<Medication, 'id'>) => {
+    const newMed: Medication = {
+      ...med,
+      id: 'med-' + Date.now(),
+      reminderActive: med.reminderActive ?? true,
+    };
+    setMedications((prev) => [...prev, newMed]);
+  };
+
+  const updateMedication = (med: Medication) => {
+    setMedications((prev) =>
+      prev.map((m) => (m.id === med.id ? med : m))
+    );
+  };
+
+  const deleteMedication = (id: string) => {
+    setMedications((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const toggleMedicationReminder = (medId: string) => {
+    setMedications((prev) =>
+      prev.map((m) =>
+        m.id === medId ? { ...m, reminderActive: !m.reminderActive } : m
+      )
+    );
+  };
+
+  const addPrescription = (
+    presc: Omit<MedicalPrescription, 'id'>,
+    syncToVault = true
+  ) => {
+    const prescId = 'presc-' + Date.now();
+    let linkedDocId: string | undefined = undefined;
+
+    if (syncToVault) {
+      linkedDocId = 'doc-' + Date.now();
+      const cleanTitle = presc.title.replace(/[^a-zA-Z0-9]/g, '_');
+      const newDoc: DocumentFile = {
+        id: linkedDocId,
+        childId: presc.childId,
+        name: `Receita_${cleanTitle}.jpg`,
+        folderCategory: 'Saúde',
+        fileType: 'image',
+        size: '2.4 MB',
+        uploadDate: new Date().toLocaleDateString('pt-BR'),
+        description: `Prescrição emitida por ${presc.doctorName || 'Médico(a)'} em ${presc.date}. ${presc.medicationsSummary}`,
+      };
+      setDocuments((prev) => [newDoc, ...prev]);
+    }
+
+    const newPresc: MedicalPrescription = {
+      ...presc,
+      id: prescId,
+      syncedToVault: !!syncToVault,
+      linkedDocumentId: linkedDocId,
+    };
+    setPrescriptions((prev) => [newPresc, ...prev]);
+  };
+
+  const deletePrescription = (id: string) => {
+    setPrescriptions((prev) => prev.filter((p) => p.id !== id));
   };
 
   const logMedicationDose = (medicationId: string, caregiver: string, note?: string) => {
@@ -436,10 +519,17 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addActivity,
         toggleSocialEvent,
         medications,
+        prescriptions,
         medicationLogs,
         vaccines,
         appointments,
         growthRecords,
+        addMedication,
+        updateMedication,
+        deleteMedication,
+        toggleMedicationReminder,
+        addPrescription,
+        deletePrescription,
         logMedicationDose,
         toggleVaccine,
         addGrowthRecord,

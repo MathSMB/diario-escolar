@@ -12,13 +12,30 @@ import {
   CheckCircle2,
   Circle,
   PhoneCall,
+  FileText,
+  Calendar,
+  Bell,
+  BellOff,
+  ExternalLink,
+  Lock,
+  Eye,
+  Trash2,
+  Sparkles,
+  Share2,
+  ShieldCheck,
 } from 'lucide-react';
+import { AttachPrescriptionModal } from '../components/modules/AttachPrescriptionModal';
+import { AddMedicationModal } from '../components/modules/AddMedicationModal';
+import { PrescriptionViewerModal } from '../components/modules/PrescriptionViewerModal';
+import { createGoogleCalendarUrl } from '../utils/calendar';
+import { MedicalPrescription, Medication } from '../types';
 
 export const HealthView: React.FC = () => {
   const {
     activeChild,
     selectedChildId,
     medications,
+    prescriptions,
     medicationLogs,
     vaccines,
     appointments,
@@ -27,11 +44,21 @@ export const HealthView: React.FC = () => {
     toggleVaccine,
     addGrowthRecord,
     addAppointment,
+    addMedication,
+    deleteMedication,
+    toggleMedicationReminder,
+    deletePrescription,
   } = useFamily();
 
   const [activeTab, setActiveTab] = useState<'farmacia' | 'vacinas' | 'consultas' | 'curva'>('farmacia');
+
+  // Modals state
+  const [showAttachPrescriptionModal, setShowAttachPrescriptionModal] = useState(false);
+  const [showAddMedicationModal, setShowAddMedicationModal] = useState(false);
+  const [viewingPrescription, setViewingPrescription] = useState<MedicalPrescription | null>(null);
   const [showGrowthModal, setShowGrowthModal] = useState(false);
   const [showAppModal, setShowAppModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // New Growth State
   const [newHeight, setNewHeight] = useState('');
@@ -50,6 +77,14 @@ export const HealthView: React.FC = () => {
     selectedChildId === 'all' ? true : m.childId === selectedChildId
   );
 
+  const filteredPrescriptions = prescriptions.filter((p) =>
+    selectedChildId === 'all' ? true : p.childId === selectedChildId
+  );
+
+  const filteredLogs = medicationLogs.filter((l) =>
+    selectedChildId === 'all' ? true : l.childId === selectedChildId
+  );
+
   const filteredVaccines = vaccines.filter((v) =>
     selectedChildId === 'all' ? true : v.childId === selectedChildId
   );
@@ -61,6 +96,11 @@ export const HealthView: React.FC = () => {
   const filteredGrowth = growthRecords.filter((g) =>
     selectedChildId === 'all' ? true : g.childId === selectedChildId
   );
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const handleSaveGrowth = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +119,7 @@ export const HealthView: React.FC = () => {
     setNewWeight('');
     setNewNotes('');
     setShowGrowthModal(false);
+    triggerToast('Medição de crescimento registrada com sucesso!');
   };
 
   const handleSaveAppointment = (e: React.FormEvent) => {
@@ -98,10 +139,30 @@ export const HealthView: React.FC = () => {
     setNewDoc('');
     setNewDiag('');
     setShowAppModal(false);
+    triggerToast('Consulta médica registrada no histórico!');
+  };
+
+  const handleAddToGoogleCalendar = (med: Medication) => {
+    const url = createGoogleCalendarUrl({
+      title: `💊 Dose ${med.name} (${med.dosage}) - ${childName}`,
+      details: `Instruções: ${med.instructions}\nIntervalo: A cada ${med.intervalHours}h\nPeríodo: ${med.startDate} a ${med.endDate}`,
+      location: 'Rotina Familiar',
+      time: med.nextDoseTime.includes(':') ? med.nextDoseTime.slice(0, 5) : '08:00',
+    });
+    window.open(url, '_blank');
+    triggerToast('Abrindo Google Agenda para sincronização do lembrete!');
   };
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-ink text-white text-xs font-medium shadow-warm-lg flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <Sparkles className="w-4 h-4 text-warm-peach" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-6 sm:p-7 rounded-3xl bg-surface border border-border-linen shadow-warm-md flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -118,7 +179,7 @@ export const HealthView: React.FC = () => {
               Prontuário & Bem-Estar • {childName}
             </h2>
             <p className="text-xs sm:text-sm text-ink-muted">
-              Gestão de doses farmacêuticas, vacinas, consultas e curvas de crescimento pediátrico.
+              Gestão de doses farmacêuticas, receitas médicas com foto, vacinas e curvas de crescimento.
             </p>
           </div>
         </div>
@@ -180,113 +241,391 @@ export const HealthView: React.FC = () => {
                 Alergias & Atenção Clínica ({activeChild.name})
               </span>
               <p className="text-xs text-ink font-medium">
-                {activeChild.allergies.join(' • ')}
+                {activeChild.allergies && activeChild.allergies.length > 0
+                  ? activeChild.allergies.join(' • ')
+                  : 'Nenhuma alergia grave cadastrada'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-medium">
             <span className="text-ink-muted">Pediatra: {activeChild.pediatricianName}</span>
-            <a
-              href={`tel:${activeChild.pediatricianPhone.replace(/\D/g, '')}`}
-              className="px-2.5 py-1 rounded-lg bg-surface hover:bg-canvas-sand text-warm-terracotta border border-border-peach font-semibold flex items-center gap-1"
-            >
-              <PhoneCall className="w-3 h-3" />
-              <span>{activeChild.pediatricianPhone}</span>
-            </a>
+            {activeChild.pediatricianPhone && (
+              <a
+                href={`tel:${activeChild.pediatricianPhone.replace(/\D/g, '')}`}
+                className="px-2.5 py-1 rounded-lg bg-surface hover:bg-canvas-sand text-warm-terracotta border border-border-peach font-semibold flex items-center gap-1 shadow-warm-sm transition-colors"
+              >
+                <PhoneCall className="w-3 h-3" />
+                <span>{activeChild.pediatricianPhone}</span>
+              </a>
+            )}
           </div>
         </div>
       )}
 
       {/* Tab 1: Farmácia & Medicamentos */}
       {activeTab === 'farmacia' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Active Treatments */}
-            <div className="space-y-4">
+        <div className="space-y-8">
+          {/* Action Header for Pharmacy & Prescriptions */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-surface border border-border-linen shadow-warm-sm">
+            <div>
               <h3 className="font-serif text-lg font-semibold text-ink flex items-center gap-2">
                 <Pill className="w-5 h-5 text-warm-terracotta" />
-                <span>Tratamentos Ativos & Posologia</span>
+                <span>Gestão Farmacêutica & Prescrições</span>
               </h3>
+              <p className="text-xs text-ink-muted">
+                Controle de horários de remédios, lembretes inteligentes e arquivo de receitas digitalizadas.
+              </p>
+            </div>
 
-              {filteredMeds.map((med) => (
-                <div key={med.id} className="planner-card p-5 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="badge-peach text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        A cada {med.intervalHours} horas
-                      </span>
-                      <h4 className="font-serif text-base font-semibold text-ink mt-1">
-                        {med.name}
-                      </h4>
-                      <p className="text-xs text-ink-muted">
-                        Dose: <strong className="text-ink">{med.dosage}</strong> • Período: {med.startDate} a {med.endDate}
-                      </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAddMedicationModal(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-warm-peach/40 hover:bg-warm-peach/70 text-warm-terracotta-dark border border-warm-peach text-xs font-semibold shadow-warm-sm transition-all"
+              >
+                <Plus className="w-3.5 h-3.5 text-warm-terracotta" />
+                <span>+ Novo Medicamento</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowAttachPrescriptionModal(true)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-calm-sage-dark hover:bg-calm-sage text-white text-xs font-semibold shadow-warm-md transition-all transform hover:-translate-y-0.5"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>+ Anexar Receita Médica</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Grid: Active Treatments + History of Care & Doses */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Active Treatments */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-serif text-base font-semibold text-ink flex items-center gap-2">
+                  <span>Tratamentos Ativos & Posologia</span>
+                  <span className="text-xs font-sans text-ink-muted">({filteredMeds.length})</span>
+                </h4>
+              </div>
+
+              {filteredMeds.length > 0 ? (
+                filteredMeds.map((med) => (
+                  <div key={med.id} className="planner-card p-5 space-y-3 relative group">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="badge-peach text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                            A cada {med.intervalHours} horas
+                          </span>
+                          {med.reminderActive ? (
+                            <span className="text-[10px] font-medium text-calm-sage-dark bg-calm-sage-light px-2 py-0.5 rounded-full flex items-center gap-1 border border-calm-sage/30">
+                              <Bell className="w-3 h-3 text-calm-sage-dark" />
+                              Lembrete Ativo
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-medium text-ink-muted bg-canvas-sand px-2 py-0.5 rounded-full flex items-center gap-1 border border-border-linen">
+                              <BellOff className="w-3 h-3 text-ink-light" />
+                              Sem Lembrete
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-serif text-base font-semibold text-ink mt-1.5">
+                          {med.name}
+                        </h4>
+                        <p className="text-xs text-ink-muted mt-0.5">
+                          Dose: <strong className="text-ink font-semibold">{med.dosage}</strong> • Período: {med.startDate} a {med.endDate}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-xs font-mono font-medium bg-canvas-sand px-2.5 py-1 rounded-lg border border-border-linen text-warm-terracotta block shadow-sm">
+                          Próx: {med.nextDoseTime}
+                        </span>
+                      </div>
                     </div>
 
-                    <span className="text-xs font-mono font-medium bg-canvas-sand px-2 py-1 rounded-lg border border-border-linen text-warm-terracotta">
-                      Próx: {med.nextDoseTime}
-                    </span>
+                    <p className="text-xs text-ink-muted bg-surface-subtle p-2.5 rounded-xl border border-border-linen">
+                      <strong>Instrução:</strong> {med.instructions}
+                    </p>
+
+                    {/* Action Row */}
+                    <div className="pt-2 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        {/* Toggle Reminder */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleMedicationReminder(med.id);
+                            triggerToast(
+                              med.reminderActive
+                                ? `Lembrete desativado para ${med.name}.`
+                                : `Lembrete ativado para ${med.name}!`
+                            );
+                          }}
+                          className="p-1.5 rounded-lg bg-canvas-sand hover:bg-surface border border-border-linen text-ink-muted hover:text-warm-terracotta text-xs transition-colors"
+                          title={med.reminderActive ? 'Desativar notificação' : 'Ativar notificação'}
+                        >
+                          {med.reminderActive ? (
+                            <Bell className="w-3.5 h-3.5 text-warm-terracotta" />
+                          ) : (
+                            <BellOff className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+
+                        {/* Google Calendar Link */}
+                        <button
+                          type="button"
+                          onClick={() => handleAddToGoogleCalendar(med)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-canvas-sand hover:bg-surface border border-border-linen text-ink-muted hover:text-calm-slate-dark text-[11px] font-medium transition-colors"
+                          title="Sincronizar com Google Agenda"
+                        >
+                          <Calendar className="w-3 h-3 text-calm-slate-dark" />
+                          <span>Google Agenda</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Deseja remover ${med.name} dos tratamentos?`)) {
+                              deleteMedication(med.id);
+                              triggerToast('Tratamento removido.');
+                            }
+                          }}
+                          className="p-1.5 rounded-lg text-ink-light hover:text-red-600 hover:bg-red-50 text-xs transition-colors"
+                          title="Excluir Tratamento"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Register Dose Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logMedicationDose(med.id, 'Mamãe (Mariana)');
+                          triggerToast(`Dose de ${med.name} registrada com sucesso!`);
+                        }}
+                        className="btn-terracotta text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-warm-sm"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Registrar Dose Tomada</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 rounded-3xl bg-surface border border-dashed border-border-linen text-center space-y-2">
+                  <Pill className="w-8 h-8 text-ink-light mx-auto" />
+                  <p className="text-xs text-ink-muted">
+                    Nenhum tratamento ou medicamento ativo cadastrado no momento.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddMedicationModal(true)}
+                    className="text-xs text-warm-terracotta hover:underline font-semibold"
+                  >
+                    + Cadastrar primeiro medicamento
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Registro de Cuidados & Doses Ministradas (Renamed from Log) */}
+            <div className="planner-card p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-border-linen mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-2xl bg-warm-peach-light text-warm-terracotta flex items-center justify-center border border-border-peach shadow-sm">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif text-base font-semibold text-ink">
+                        Registro de Cuidados & Doses Ministradas
+                      </h4>
+                      <p className="text-[11px] text-ink-muted">
+                        Acompanhamento em tempo real entre pais e cuidadores
+                      </p>
+                    </div>
                   </div>
 
-                  <p className="text-xs text-ink-muted bg-surface-subtle p-2.5 rounded-xl border border-border-linen">
-                    Instrução: {med.instructions}
+                  <span className="badge-sage text-[10px] px-2 py-0.5 rounded-full font-medium">
+                    {filteredLogs.length} registros
+                  </span>
+                </div>
+
+                <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                  {filteredLogs.length > 0 ? (
+                    filteredLogs.map((log) => (
+                      <div
+                        key={log.id}
+                        className="p-3.5 rounded-2xl bg-canvas-sand/60 border border-border-linen text-xs flex items-center justify-between gap-3 hover:bg-surface transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="w-2.5 h-2.5 rounded-full bg-calm-sage shrink-0" />
+                          <div>
+                            <span className="font-semibold text-ink">{log.medicationName}</span>
+                            <p className="text-[11px] text-ink-muted mt-0.5">
+                              Ministrado por <strong className="text-ink">{log.caregiver}</strong> • {log.note}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-mono text-[11px] text-ink-muted bg-surface px-2.5 py-1 rounded-xl border border-border-linen shrink-0 shadow-warm-sm">
+                          {log.administeredAt}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-6 text-center text-ink-muted text-xs italic">
+                      Nenhuma dose registrada ainda hoje.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-3 mt-3 border-t border-border-linen flex items-center justify-between text-[11px] text-ink-muted">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-calm-sage" />
+                  Sincronizado entre todos os cuidadores
+                </span>
+                <span>Registro Oficial</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Receitas Médicas & Prescrições Digitais (New Area) */}
+          <div className="space-y-4 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border-linen">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-calm-sage-light text-calm-sage-dark flex items-center justify-center border border-calm-sage/30">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-serif text-lg font-semibold text-ink">
+                    Receitas Médicas & Prescrições Digitais
+                  </h4>
+                  <p className="text-xs text-ink-muted">
+                    Histórico com imagem da receita, médico emissor, posologia e integração com o Cofre Familiar
                   </p>
+                </div>
+              </div>
 
-                  <div className="pt-2 flex items-center justify-between">
-                    <span className="text-[11px] text-calm-sage-dark font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Tratamento em dia
-                    </span>
+              <button
+                type="button"
+                onClick={() => setShowAttachPrescriptionModal(true)}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-canvas-sand hover:bg-surface border border-border-linen text-ink text-xs font-semibold shadow-warm-sm transition-all self-start sm:self-auto"
+              >
+                <Plus className="w-3.5 h-3.5 text-warm-terracotta" />
+                <span>+ Anexar Receita</span>
+              </button>
+            </div>
 
+            {/* Prescriptions Gallery Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredPrescriptions.map((presc) => (
+                <div
+                  key={presc.id}
+                  className="planner-card p-4 space-y-3 hover:border-calm-sage/50 transition-all flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-semibold text-ink-muted bg-canvas-sand px-2 py-0.5 rounded-full border border-border-linen">
+                          {presc.date}
+                        </span>
+                        <h5 className="font-serif text-sm font-semibold text-ink mt-1 line-clamp-1">
+                          {presc.title}
+                        </h5>
+                        <p className="text-[11px] text-ink-muted truncate">
+                          {presc.doctorName || 'Médico(a) assistente'} {presc.doctorCrm ? `(${presc.doctorCrm})` : ''}
+                        </p>
+                      </div>
+
+                      {presc.syncedToVault && (
+                        <span
+                          className="text-[10px] text-calm-slate-dark bg-canvas-sand px-2 py-0.5 rounded-full border border-border-linen flex items-center gap-1 shrink-0"
+                          title="Arquivo salvo com cópia no Cofre Familiar"
+                        >
+                          <Lock className="w-3 h-3 text-calm-sage-dark" />
+                          <span>Cofre</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Prescription Thumbnail with Zoom Trigger */}
+                    {presc.imageUrl ? (
+                      <div
+                        onClick={() => setViewingPrescription(presc)}
+                        className="relative h-28 w-full rounded-xl overflow-hidden border border-border-linen bg-ink/5 cursor-pointer group/thumb"
+                      >
+                        <img
+                          src={presc.imageUrl}
+                          alt={presc.title}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-ink/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-[1px]">
+                          <Eye className="w-4 h-4" />
+                          <span>Ver Receita</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-24 w-full rounded-xl border border-dashed border-border-linen bg-canvas-sand/60 flex items-center justify-center text-xs text-ink-muted">
+                        Sem anexo de foto
+                      </div>
+                    )}
+
+                    {/* Medicines Summary */}
+                    <div className="p-2.5 rounded-xl bg-canvas-sand/60 border border-border-linen text-xs text-ink">
+                      <span className="font-semibold text-warm-terracotta-dark block text-[10px] uppercase">
+                        Prescrição:
+                      </span>
+                      <p className="line-clamp-2 text-[11px] mt-0.5 font-medium">
+                        {presc.medicationsSummary}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card Footer Actions */}
+                  <div className="pt-2 border-t border-border-linen flex items-center justify-between gap-2">
                     <button
-                      onClick={() => logMedicationDose(med.id, 'Mamãe (Mariana)')}
-                      className="btn-terracotta text-xs py-2 px-3.5 flex items-center gap-1.5"
+                      type="button"
+                      onClick={() => setViewingPrescription(presc)}
+                      className="text-xs font-semibold text-calm-sage-dark hover:text-calm-sage flex items-center gap-1"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Registrar Dose Tomada Agora</span>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Detalhes</span>
                     </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => alert(`Compartilhando receita: ${presc.title}`)}
+                        className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-canvas-sand transition-colors"
+                        title="Compartilhar Ficha"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Deseja excluir a receita "${presc.title}"?`)) {
+                            deletePrescription(presc.id);
+                            triggerToast('Receita médica removida.');
+                          }
+                        }}
+                        className="p-1.5 rounded-lg text-ink-light hover:text-red-600 hover:bg-red-50 transition-colors"
+                        title="Excluir Receita"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
-            </div>
-
-            {/* Medication Administration History */}
-            <div className="planner-card p-6">
-              <div className="flex items-center justify-between pb-3 border-b border-border-linen mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-warm-peach-light text-warm-terracotta flex items-center justify-center">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif text-base font-semibold text-ink">
-                      Log de Administração de Doses
-                    </h4>
-                    <p className="text-[11px] text-ink-muted">Registro em tempo real entre os cuidadores</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2.5">
-                {medicationLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-3 rounded-xl bg-canvas-sand/60 border border-border-linen text-xs flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-calm-sage" />
-                      <div>
-                        <span className="font-semibold text-ink">{log.medicationName}</span>
-                        <p className="text-[11px] text-ink-muted">
-                          Ministrado por <strong>{log.caregiver}</strong> • {log.note}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="font-mono text-[11px] text-ink-muted bg-surface px-2 py-0.5 rounded border border-border-linen shrink-0">
-                      {log.administeredAt}
-                    </span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -442,7 +781,6 @@ export const HealthView: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-4">
-              {/* Graphic container */}
               <div className="planner-card p-6">
                 <h4 className="font-serif text-base font-semibold text-ink mb-2">
                   Evolução Histórica da Estatura vs Idade
@@ -506,6 +844,34 @@ export const HealthView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal: Anexar Receita Médica */}
+      <AttachPrescriptionModal
+        isOpen={showAttachPrescriptionModal}
+        onClose={() => setShowAttachPrescriptionModal(false)}
+        targetChildId={selectedChildId === 'all' ? 'helena' : selectedChildId}
+      />
+
+      {/* Modal: Novo Medicamento */}
+      <AddMedicationModal
+        isOpen={showAddMedicationModal}
+        onClose={() => setShowAddMedicationModal(false)}
+        targetChildId={selectedChildId === 'all' ? 'helena' : selectedChildId}
+        onSave={(newMed) => {
+          addMedication(newMed);
+          triggerToast(`Tratamento com ${newMed.name} cadastrado com sucesso!`);
+        }}
+      />
+
+      {/* Modal: Visualizador Lightbox de Receita Médica */}
+      <PrescriptionViewerModal
+        prescription={viewingPrescription}
+        onClose={() => setViewingPrescription(null)}
+        onDelete={(id) => {
+          deletePrescription(id);
+          triggerToast('Receita médica excluída com sucesso.');
+        }}
+      />
 
       {/* Modal: Nova Medição de Crescimento */}
       {showGrowthModal && (

@@ -4,6 +4,28 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 5: Melhoria Integral da Área de Saúde (Receitas Médicas, Sincronização com o Cofre, Notificações & Google Calendar)
+**Data:** 20/09/2026  
+**Status:** Concluído e Validado
+
+### 1. Histórico & Anexo de Receitas Médicas com Imagem
+- **Demanda do Usuário:** Possibilidade de anexar diretamente da tela de Saúde as receitas médicas, registrando data, nome do pediatra/especialista, local/hospital e a foto da receita, com histórico acessível e link automático com o Cofre Familiar.
+- **Implementação:**
+  - **Tipo de Dados (`MedicalPrescription`):** Criada estrutura com título, data, pediatra, CRM, clínica, sumário dos medicamentos, posologia, foto/imagem da receita e status de sincronização.
+  - **Modal de Anexo (`AttachPrescriptionModal.tsx`):** Permite upload de imagem da receita via `FileReader`, preenchimento de metadados clínicos e opção de salvamento automático no Cofre.
+  - **Sincronização com o Cofre Familiar:** Ao cadastrar uma receita, cria-se automaticamente um `DocumentFile` categorizado em *"Saúde"* com tag de imagem, visível no Cofre Familiar.
+  - **Galeria & Visualizador Lightbox (`PrescriptionViewerModal.tsx`):** Exibição das receitas em cards com thumbnails, zoom da foto da prescrição em tela cheia e opções de compartilhamento/impressão.
+
+### 2. Humanização da Nomenclatura
+- **Alteração:** O termo técnico *"Log de Administração de Doses"* foi substituído por **"Registro de Cuidados & Doses Ministradas"** com o subtítulo *"Acompanhamento em tempo real entre pais e cuidadores"*.
+
+### 3. Lembretes, Notificações & Integração com Google Agenda
+- **Notificações do Sistema:** Botão de alternância (toggle) de lembretes ativos por medicamento com feedback instantâneo (toast).
+- **Google Agenda (`utils/calendar.ts`):** Botão *"Google Agenda 📅"* em cada tratamento ativo que gera e abre o link oficial de criação de evento no Google Calendar pré-preenchido com nome do remédio, dose, horários e instruções.
+- **Novo Tratamento (`AddMedicationModal.tsx`):** Modal completo para cadastrar novos medicamentos ativos e suas frequências.
+
+---
+
 ## 📅 Registro 4: Gestão Completa de Membros da Família (CRUD de Filhos/Perfis) & Conexão Dinâmica SOS
 **Data:** 20/09/2026  
 **Status:** Concluído e Validado
