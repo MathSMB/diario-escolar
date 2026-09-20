@@ -405,31 +405,34 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
 
       </div>
 
-      {/* 5. Smart Quick Hub (Atalhos Limpos para Outros Módulos) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 5. Smart Quick Hub (Atalhos Limpos com Espaçamento Amplo) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
         {/* Quick Note Card */}
         {latestNote && (
           <div
             onClick={() => navigate('productivity')}
-            className="planner-card p-4.5 cursor-pointer hover:border-border-peach transition-all group flex flex-col justify-between"
+            className="planner-card p-5 sm:p-6 cursor-pointer hover:border-border-peach transition-all group flex flex-col justify-between min-h-[210px] overflow-hidden"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-ink-muted mb-2">
-                <span className="badge-peach text-[10px] font-semibold px-2 py-0.2 rounded-full">
+              <div className="flex items-center justify-between gap-2 text-xs text-ink-muted mb-2.5">
+                <span className="badge-peach text-[10px] font-semibold px-2.5 py-0.5 rounded-full shrink-0">
                   {latestNote.tags[0]}
                 </span>
-                <span className="text-[10px] text-ink-light">{latestNote.createdAt}</span>
+                <span className="text-[11px] text-ink-light truncate text-right">
+                  {latestNote.createdAt}
+                </span>
               </div>
-              <h5 className="font-serif text-sm font-semibold text-ink group-hover:text-warm-terracotta transition-colors line-clamp-1">
+              <h5 className="font-serif text-sm font-semibold text-ink group-hover:text-warm-terracotta transition-colors leading-snug line-clamp-2">
                 {latestNote.title}
               </h5>
-              <p className="text-xs text-ink-muted mt-1 line-clamp-2 font-sans">
+              <p className="text-xs text-ink-muted mt-2 line-clamp-2 font-sans leading-relaxed">
                 {latestNote.content}
               </p>
             </div>
-            <span className="text-[11px] font-serif italic text-warm-terracotta mt-3 flex items-center gap-1">
-              <Bookmark className="w-3 h-3" /> Abrir bloco de notas →
-            </span>
+            <div className="pt-3 mt-3 border-t border-border-linen/70 flex items-center gap-1.5 text-xs font-serif italic text-warm-terracotta font-medium">
+              <Bookmark className="w-3.5 h-3.5 shrink-0" />
+              <span className="group-hover:translate-x-1 transition-transform">Abrir bloco de notas →</span>
+            </div>
           </div>
         )}
 
@@ -437,50 +440,56 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
         {latestMemory && (
           <div
             onClick={() => navigate('memories')}
-            className="planner-card p-4.5 cursor-pointer hover:border-border-peach transition-all group flex flex-col justify-between"
+            className="planner-card p-5 sm:p-6 cursor-pointer hover:border-border-peach transition-all group flex flex-col justify-between min-h-[210px] overflow-hidden"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-ink-muted mb-2">
-                <span className="badge-sage text-[10px] font-semibold px-2 py-0.2 rounded-full">
+              <div className="flex items-center justify-between gap-2 text-xs text-ink-muted mb-2.5">
+                <span className="badge-sage text-[10px] font-semibold px-2.5 py-0.5 rounded-full shrink-0">
                   #{latestMemory.category}
                 </span>
-                <span className="text-[10px] text-ink-light">{latestMemory.date}</span>
+                <span className="text-[11px] text-ink-light truncate text-right">
+                  {latestMemory.date}
+                </span>
               </div>
-              <h5 className="font-serif text-sm font-semibold text-ink group-hover:text-warm-terracotta transition-colors line-clamp-1">
+              <h5 className="font-serif text-sm font-semibold text-ink group-hover:text-warm-terracotta transition-colors leading-snug line-clamp-2">
                 {latestMemory.title}
               </h5>
-              <p className="text-xs text-ink-muted mt-1 line-clamp-2 font-serif italic">
+              <p className="text-xs text-ink-muted mt-2 line-clamp-2 font-serif italic leading-relaxed">
                 "{latestMemory.narrative}"
               </p>
             </div>
-            <span className="text-[11px] font-serif italic text-warm-terracotta mt-3 flex items-center gap-1">
-              <Camera className="w-3 h-3" /> Ver álbum de memórias →
-            </span>
+            <div className="pt-3 mt-3 border-t border-border-linen/70 flex items-center gap-1.5 text-xs font-serif italic text-warm-terracotta font-medium">
+              <Camera className="w-3.5 h-3.5 shrink-0" />
+              <span className="group-hover:translate-x-1 transition-transform">Ver álbum de memórias →</span>
+            </div>
           </div>
         )}
 
         {/* Quick Documents Vault */}
         <div
           onClick={() => navigate('documents')}
-          className="planner-card p-4.5 cursor-pointer hover:border-border-peach transition-all group flex flex-col justify-between"
+          className="planner-card p-5 sm:p-6 cursor-pointer hover:border-border-peach transition-all group flex flex-col justify-between min-h-[210px] overflow-hidden"
         >
           <div>
-            <div className="flex items-center justify-between text-xs text-ink-muted mb-2">
-              <span className="badge-slate text-[10px] font-semibold px-2 py-0.2 rounded-full">
+            <div className="flex items-center justify-between gap-2 text-xs text-ink-muted mb-2.5">
+              <span className="badge-slate text-[10px] font-semibold px-2.5 py-0.5 rounded-full shrink-0">
                 Cofre Seguro
               </span>
-              <span className="text-[10px] text-ink-light">Criptografado</span>
+              <span className="text-[11px] text-ink-light truncate text-right">
+                Criptografado
+              </span>
             </div>
-            <h5 className="font-serif text-sm font-semibold text-ink group-hover:text-warm-terracotta transition-colors">
+            <h5 className="font-serif text-sm font-semibold text-ink group-hover:text-warm-terracotta transition-colors leading-snug">
               Documentos & Exames
             </h5>
-            <p className="text-xs text-ink-muted mt-1 font-sans">
+            <p className="text-xs text-ink-muted mt-2 line-clamp-2 font-sans leading-relaxed">
               Certidões, carteira de vacinas carimbada e contratos escolares.
             </p>
           </div>
-          <span className="text-[11px] font-serif italic text-warm-terracotta mt-3 flex items-center gap-1">
-            <FolderLock className="w-3 h-3" /> Acessar cofre familiar →
-          </span>
+          <div className="pt-3 mt-3 border-t border-border-linen/70 flex items-center gap-1.5 text-xs font-serif italic text-warm-terracotta font-medium">
+            <FolderLock className="w-3.5 h-3.5 shrink-0" />
+            <span className="group-hover:translate-x-1 transition-transform">Acessar cofre familiar →</span>
+          </div>
         </div>
       </div>
 

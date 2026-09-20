@@ -13,7 +13,11 @@ import {
   Circle,
   Backpack,
   Sparkles,
+  Edit2,
+  Trash2,
+  X,
 } from 'lucide-react';
+import { ClassScheduleItem } from '../types';
 
 export const EducationView: React.FC = () => {
   const {
@@ -22,6 +26,9 @@ export const EducationView: React.FC = () => {
     meetings,
     circulars,
     toggleScheduleMaterial,
+    addScheduleItem,
+    updateScheduleItem,
+    deleteScheduleItem,
     addAssessment,
     selectedChildId,
     activeChild,
@@ -29,8 +36,22 @@ export const EducationView: React.FC = () => {
 
   const [selectedDay, setSelectedDay] = useState<string>('Quinta');
   const [activeSection, setActiveSection] = useState<'grade' | 'boletim' | 'reunioes' | 'circulares'>('grade');
-  const [showNewAssessmentModal, setShowNewAssessmentModal] = useState(false);
 
+  // Schedule Modal State
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+  const [schedSubject, setSchedSubject] = useState('');
+  const [schedDay, setSchedDay] = useState<'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta'>('Quinta');
+  const [schedStartTime, setSchedStartTime] = useState('08:00');
+  const [schedEndTime, setSchedEndTime] = useState('08:50');
+  const [schedTeacher, setSchedTeacher] = useState('');
+  const [schedRoom, setSchedRoom] = useState('');
+  const [schedColorTag, setSchedColorTag] = useState('badge-slate');
+  const [schedMaterials, setSchedMaterials] = useState<{ id: string; name: string; checked: boolean }[]>([]);
+  const [materialInput, setMaterialInput] = useState('');
+
+  // Assessment Modal State
+  const [showNewAssessmentModal, setShowNewAssessmentModal] = useState(false);
   const [newSubj, setNewSubj] = useState('');
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<'Prova' | 'Trabalho' | 'Feira de Ciências'>('Prova');
@@ -55,6 +76,101 @@ export const EducationView: React.FC = () => {
   const filteredCirculars = circulars.filter((c) =>
     selectedChildId === 'all' ? true : c.childId === selectedChildId
   );
+
+  // Open modal for new schedule
+  const handleOpenAddSchedule = () => {
+    setEditingScheduleId(null);
+    setSchedSubject('');
+    setSchedDay((selectedDay as any) || 'Quinta');
+    setSchedStartTime('08:00');
+    setSchedEndTime('08:50');
+    setSchedTeacher('');
+    setSchedRoom('Sala 14B');
+    setSchedColorTag('badge-slate');
+    setSchedMaterials([
+      { id: 'm-' + Date.now(), name: 'Caderno pautado', checked: true },
+    ]);
+    setMaterialInput('');
+    setShowScheduleModal(true);
+  };
+
+  // Open modal for editing existing schedule
+  const handleOpenEditSchedule = (item: ClassScheduleItem) => {
+    setEditingScheduleId(item.id);
+    setSchedSubject(item.subject);
+    setSchedDay(item.dayOfWeek);
+    setSchedStartTime(item.startTime);
+    setSchedEndTime(item.endTime);
+    setSchedTeacher(item.teacher);
+    setSchedRoom(item.room);
+    setSchedColorTag(item.colorTag || 'badge-slate');
+    setSchedMaterials(item.materials || []);
+    setMaterialInput('');
+    setShowScheduleModal(true);
+  };
+
+  // Add material to temp list
+  const handleAddMaterialItem = () => {
+    if (!materialInput.trim()) return;
+    setSchedMaterials([
+      ...schedMaterials,
+      { id: 'mat-' + Date.now(), name: materialInput.trim(), checked: false },
+    ]);
+    setMaterialInput('');
+  };
+
+  // Remove material from temp list
+  const handleRemoveMaterialItem = (matId: string) => {
+    setSchedMaterials(schedMaterials.filter((m) => m.id !== matId));
+  };
+
+  // Calculate duration string
+  const calculateDuration = (start: string, end: string) => {
+    if (!start || !end) return '50 min';
+    const [h1, m1] = start.split(':').map(Number);
+    const [h2, m2] = end.split(':').map(Number);
+    const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+    return diff > 0 ? `${diff} min` : '50 min';
+  };
+
+  // Save schedule (Create or Update)
+  const handleSaveSchedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!schedSubject.trim()) return;
+
+    const durationStr = calculateDuration(schedStartTime, schedEndTime);
+
+    if (editingScheduleId) {
+      updateScheduleItem({
+        id: editingScheduleId,
+        childId: selectedChildId === 'all' ? 'helena' : selectedChildId,
+        dayOfWeek: schedDay,
+        subject: schedSubject,
+        startTime: schedStartTime,
+        endTime: schedEndTime,
+        duration: durationStr,
+        teacher: schedTeacher || 'Professor Responsável',
+        room: schedRoom || 'Sala de Aula',
+        colorTag: schedColorTag,
+        materials: schedMaterials,
+      });
+    } else {
+      addScheduleItem({
+        childId: selectedChildId === 'all' ? 'helena' : selectedChildId,
+        dayOfWeek: schedDay,
+        subject: schedSubject,
+        startTime: schedStartTime,
+        endTime: schedEndTime,
+        duration: durationStr,
+        teacher: schedTeacher || 'Professor Responsável',
+        room: schedRoom || 'Sala de Aula',
+        colorTag: schedColorTag,
+        materials: schedMaterials,
+      });
+    }
+
+    setShowScheduleModal(false);
+  };
 
   const handleCreateAssessment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,45 +263,68 @@ export const EducationView: React.FC = () => {
       {/* Section 1: Grade Semanal & Mochila */}
       {activeSection === 'grade' && (
         <div className="space-y-6">
-          {/* Day of Week Selector Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider px-2">
-              Dia da Semana:
-            </span>
-            {daysOfWeek.map((day) => (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`px-4 py-2 rounded-2xl text-xs font-sans font-medium transition-all duration-200 ${
-                  selectedDay === day
-                    ? 'bg-warm-terracotta text-white shadow-warm-md font-semibold scale-105'
-                    : 'bg-surface text-ink-muted hover:bg-canvas-sand border border-border-linen'
-                }`}
-              >
-                {day}
-              </button>
-            ))}
+          {/* Day of Week Selector Pills & Add Class Button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+              <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider px-2 shrink-0">
+                Dia da Semana:
+              </span>
+              {daysOfWeek.map((day) => (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={`px-4 py-2 rounded-2xl text-xs font-sans font-medium transition-all duration-200 ${
+                    selectedDay === day
+                      ? 'bg-warm-terracotta text-white shadow-warm-md font-semibold scale-105'
+                      : 'bg-surface text-ink-muted hover:bg-canvas-sand border border-border-linen'
+                  }`}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+
+            {/* Prominent Add Schedule Button */}
+            <button
+              onClick={handleOpenAddSchedule}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-warm-terracotta hover:bg-warm-terracotta-dark text-white font-sans text-xs sm:text-sm font-semibold shadow-warm-sm hover:scale-[1.02] transition-all self-start sm:self-auto shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Adicionar Aula / Horário</span>
+            </button>
           </div>
 
           {/* Schedule Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Class Timeline (2 cols) */}
             <div className="lg:col-span-2 space-y-4">
-              <h3 className="font-serif text-lg font-semibold text-ink flex items-center gap-2">
-                <Clock className="w-4 h-4 text-warm-terracotta" />
-                <span>Horários de Aula • {selectedDay}-feira</span>
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-lg font-semibold text-ink flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-warm-terracotta" />
+                  <span>Horários de Aula • {selectedDay}-feira</span>
+                </h3>
+                <span className="text-xs text-ink-muted">
+                  {filteredSchedule.length} aula(s) programada(s)
+                </span>
+              </div>
 
               {filteredSchedule.length === 0 ? (
-                <div className="p-8 rounded-3xl bg-surface border border-border-linen text-center text-ink-muted">
-                  <BookOpen className="w-8 h-8 mx-auto mb-2 text-ink-light opacity-60" />
+                <div className="p-8 rounded-3xl bg-surface border border-border-linen text-center text-ink-muted space-y-3">
+                  <BookOpen className="w-8 h-8 mx-auto text-ink-light opacity-60" />
                   <p className="font-serif text-sm">Nenhuma aula cadastrada para {selectedDay}-feira.</p>
+                  <button
+                    onClick={handleOpenAddSchedule}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-warm-peach-light text-warm-terracotta-dark font-semibold text-xs border border-warm-peach hover:bg-warm-peach transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Adicionar primeira aula de {selectedDay}</span>
+                  </button>
                 </div>
               ) : (
                 filteredSchedule.map((item) => (
                   <div
                     key={item.id}
-                    className="planner-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="planner-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                   >
                     <div className="flex items-start gap-3.5">
                       <div className="w-14 text-center font-sans pr-3 border-r border-border-linen shrink-0">
@@ -207,13 +346,29 @@ export const EducationView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Materials preview inside card */}
-                    <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-border-linen">
+                    {/* Action buttons & Materials preview */}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-border-linen">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEditSchedule(item)}
+                          className="p-1.5 rounded-lg bg-canvas-sand hover:bg-surface text-ink-muted hover:text-warm-terracotta border border-border-linen transition-colors flex items-center gap-1 text-xs"
+                          title="Editar horário e materiais"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline text-[11px] font-medium">Editar</span>
+                        </button>
+
+                        <button
+                          onClick={() => deleteScheduleItem(item.id)}
+                          className="p-1.5 rounded-lg bg-canvas-sand hover:bg-red-50 text-ink-muted hover:text-red-600 border border-border-linen transition-colors"
+                          title="Excluir horário de aula"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
                       <span className="text-[11px] font-sans text-ink-muted block">
-                        {item.materials.length} materiais associados
-                      </span>
-                      <span className="text-[10px] text-calm-sage-dark font-medium bg-calm-sage-light px-2 py-0.5 rounded-full inline-block mt-1">
-                        Mochila Pronta
+                        {item.materials?.length || 0} materiais associados
                       </span>
                     </div>
                   </div>
@@ -238,28 +393,34 @@ export const EducationView: React.FC = () => {
               </div>
 
               <div className="space-y-2.5">
-                {filteredSchedule.flatMap((sch) =>
-                  sch.materials.map((mat) => (
-                    <button
-                      key={mat.id}
-                      onClick={() => toggleScheduleMaterial(sch.id, mat.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200 border ${
-                        mat.checked
-                          ? 'bg-calm-sage-light/50 border-calm-sage/30 text-ink-muted line-through'
-                          : 'bg-surface hover:bg-canvas-sand border-border-linen text-ink'
-                      }`}
-                    >
-                      {mat.checked ? (
-                        <CheckCircle2 className="w-4 h-4 text-calm-sage shrink-0" />
-                      ) : (
-                        <Circle className="w-4 h-4 text-border-linen shrink-0" />
-                      )}
-                      <div>
-                        <span className="text-xs font-sans font-medium block">{mat.name}</span>
-                        <span className="text-[10px] text-ink-light block">{sch.subject}</span>
-                      </div>
-                    </button>
-                  ))
+                {filteredSchedule.length === 0 ? (
+                  <p className="text-xs text-ink-muted italic text-center py-4">
+                    Nenhum material cadastrado para este dia.
+                  </p>
+                ) : (
+                  filteredSchedule.flatMap((sch) =>
+                    (sch.materials || []).map((mat) => (
+                      <button
+                        key={mat.id}
+                        onClick={() => toggleScheduleMaterial(sch.id, mat.id)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200 border ${
+                          mat.checked
+                            ? 'bg-calm-sage-light/50 border-calm-sage/30 text-ink-muted line-through'
+                            : 'bg-surface hover:bg-canvas-sand border-border-linen text-ink'
+                        }`}
+                      >
+                        {mat.checked ? (
+                          <CheckCircle2 className="w-4 h-4 text-calm-sage shrink-0" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-border-linen shrink-0" />
+                        )}
+                        <div>
+                          <span className="text-xs font-sans font-medium block">{mat.name}</span>
+                          <span className="text-[10px] text-ink-light block">{sch.subject}</span>
+                        </div>
+                      </button>
+                    ))
+                  )
                 )}
               </div>
             </div>
@@ -410,7 +571,7 @@ export const EducationView: React.FC = () => {
               <div key={circ.id} className="planner-card p-5 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="badge-slate text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="badge-slate text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                       {circ.category}
                     </span>
                     <span className="text-xs text-ink-muted">{circ.date}</span>
@@ -431,6 +592,214 @@ export const EducationView: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Adicionar / Editar Horário de Aula */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-xl bg-surface border border-border-linen rounded-3xl p-6 sm:p-7 shadow-warm-hover max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-border-linen mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-warm-peach-light text-warm-terracotta flex items-center justify-center">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-semibold text-ink">
+                    {editingScheduleId ? 'Editar Horário de Aula' : 'Adicionar Horário de Aula'}
+                  </h3>
+                  <p className="text-xs text-ink-muted">Grade escolar e itens de mochila para {childName}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="w-8 h-8 rounded-full bg-canvas-sand flex items-center justify-center text-ink-muted hover:text-ink transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSchedule} className="space-y-4">
+              {/* Disciplina */}
+              <div>
+                <label className="text-xs font-semibold text-ink-muted block mb-1">
+                  Disciplina / Matéria:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Matemática Lúdica, Educação Artística, História"
+                  value={schedSubject}
+                  onChange={(e) => setSchedSubject(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                  required
+                />
+              </div>
+
+              {/* Dia da Semana & Cor */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">
+                    Dia da Semana:
+                  </label>
+                  <select
+                    value={schedDay}
+                    onChange={(e) => setSchedDay(e.target.value as any)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                  >
+                    <option value="Segunda">Segunda-feira</option>
+                    <option value="Terça">Terça-feira</option>
+                    <option value="Quarta">Quarta-feira</option>
+                    <option value="Quinta">Quinta-feira</option>
+                    <option value="Sexta">Sexta-feira</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">
+                    Estilo do Badge / Cor:
+                  </label>
+                  <select
+                    value={schedColorTag}
+                    onChange={(e) => setSchedColorTag(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                  >
+                    <option value="badge-slate">Azul Ardósia (Padrão)</option>
+                    <option value="badge-peach">Pêssego Aveludado</option>
+                    <option value="badge-sage">Verde Sálvia</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Horário Início e Fim */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">
+                    Horário de Início:
+                  </label>
+                  <input
+                    type="time"
+                    value={schedStartTime}
+                    onChange={(e) => setSchedStartTime(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">
+                    Horário de Término:
+                  </label>
+                  <input
+                    type="time"
+                    value={schedEndTime}
+                    onChange={(e) => setSchedEndTime(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Professor e Sala */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">
+                    Professor(a):
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Profª. Camila Rodrigues"
+                    value={schedTeacher}
+                    onChange={(e) => setSchedTeacher(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">
+                    Sala / Local:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Sala 14B, Ateliê, Pátio"
+                    value={schedRoom}
+                    onChange={(e) => setSchedRoom(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-canvas-sand border border-border-linen text-sm text-ink focus:outline-none focus:border-warm-terracotta"
+                  />
+                </div>
+              </div>
+
+              {/* Materiais da Mochila (Checklist Dinâmico) */}
+              <div className="p-4 rounded-2xl bg-canvas-sand/60 border border-border-linen space-y-3">
+                <label className="text-xs font-semibold text-ink block">
+                  🎒 Materiais da Mochila para esta Aula:
+                </label>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ex: Caderno pautado, Estojo, Avental..."
+                    value={materialInput}
+                    onChange={(e) => setMaterialInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddMaterialItem();
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border-linen text-xs text-ink focus:outline-none focus:border-warm-terracotta"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddMaterialItem}
+                    className="px-3.5 py-2 rounded-xl bg-surface hover:bg-canvas-sand border border-border-linen text-xs font-semibold text-warm-terracotta"
+                  >
+                    + Adicionar
+                  </button>
+                </div>
+
+                {/* Materials List */}
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {schedMaterials.map((mat) => (
+                    <div
+                      key={mat.id}
+                      className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border-linen text-xs"
+                    >
+                      <span className="text-ink font-medium">✓ {mat.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMaterialItem(mat.id)}
+                        className="text-ink-muted hover:text-red-500 transition-colors p-0.5"
+                        title="Remover material"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-linen">
+                <button
+                  type="button"
+                  onClick={() => setShowScheduleModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-ink-muted hover:bg-canvas-sand transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-warm-terracotta hover:bg-warm-terracotta-dark text-white text-xs font-semibold shadow-warm-sm transition-all"
+                >
+                  {editingScheduleId ? 'Salvar Alterações' : 'Salvar Novo Horário'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

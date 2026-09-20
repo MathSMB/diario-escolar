@@ -52,6 +52,9 @@ interface FamilyContextType {
   meetings: PedagogicalMeeting[];
   circulars: SchoolCircular[];
   toggleScheduleMaterial: (scheduleId: string, materialId: string) => void;
+  addScheduleItem: (item: Omit<ClassScheduleItem, 'id'>) => void;
+  updateScheduleItem: (item: ClassScheduleItem) => void;
+  deleteScheduleItem: (id: string) => void;
   addAssessment: (ass: Omit<AcademicAssessment, 'id'>) => void;
 
   // Extracurricular
@@ -213,6 +216,24 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
   };
 
+  const addScheduleItem = (item: Omit<ClassScheduleItem, 'id'>) => {
+    const newItem: ClassScheduleItem = {
+      ...item,
+      id: 'sch-' + Date.now(),
+    };
+    setSchedules((prev) => [...prev, newItem]);
+  };
+
+  const updateScheduleItem = (item: ClassScheduleItem) => {
+    setSchedules((prev) =>
+      prev.map((sch) => (sch.id === item.id ? item : sch))
+    );
+  };
+
+  const deleteScheduleItem = (id: string) => {
+    setSchedules((prev) => prev.filter((sch) => sch.id !== id));
+  };
+
   const addAssessment = (ass: Omit<AcademicAssessment, 'id'>) => {
     const newItem: AcademicAssessment = {
       ...ass,
@@ -353,6 +374,9 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         meetings,
         circulars,
         toggleScheduleMaterial,
+        addScheduleItem,
+        updateScheduleItem,
+        deleteScheduleItem,
         addAssessment,
         activities,
         socialEvents,

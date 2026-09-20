@@ -4,6 +4,28 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 3: Correção de Layout nos Cards Rápidos & Gestão Completa de Horários Escolares
+**Data:** 20/09/2026  
+**Status:** Concluído e Validado
+
+### 1. Correção de Vazamento de Texto e Espaçamento (Cards da Visão Hoje)
+- **Problema:** Em telas com largura intermediária ou títulos longos, as tags de categoria e datas colidiam e o texto dos títulos vazava além das bordas dos cartões de Bloco de Notas, Memórias e Cofre.
+- **Solução:**
+  - Ajustado padding e altura mínima (`min-h-[210px]`) com `overflow-hidden` e `flex-col justify-between`.
+  - Cabeçalho responsivo com tags flexíveis (`shrink-0`) e formatação de data harmoniosa.
+  - Títulos protegidos com `line-clamp-2`, `leading-snug` e quebra de palavras segura.
+
+### 2. Gestão Manual de Grade de Horários Escolares (Educação)
+- **Problema:** Os horários eram estáticos e não existia interface para adicionar, editar ou excluir matérias e horários das aulas.
+- **Solução:**
+  - **Estado e Persistência:** Adicionadas as ações `addScheduleItem`, `updateScheduleItem` e `deleteScheduleItem` no `FamilyContext` com persistência no `localStorage`.
+  - **Interface de Ação:** Botão `+ Adicionar Aula / Horário` no seletor de dias da semana e botões de `Editar` (✏️) e `Excluir` (🗑️) em cada card de aula.
+  - **Modal Completo de Horário:**
+    - Definição de Matéria, Dia da Semana (Segunda a Sexta), Horário de Início e Término (com cálculo automático de duração em minutos), Professor(a), Sala/Local e Tag de cor visual.
+    - Gestão interativa de Lista de Materiais da Mochila (adicionar itens específicos associados à aula com remoção individual).
+
+---
+
 ## 📅 Registro 2: Auditoria de Experiência do Cliente (CX/UX) & Implementação da Melhor Versão Ergonômica
 **Data:** 20/09/2026  
 **Status:** Concluído e Comitado
