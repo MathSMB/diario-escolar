@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FamilyProvider, useFamily } from './context/FamilyContext';
 import { PlannerHeader } from './components/layout/PlannerHeader';
 import { PlannerNavbar } from './components/layout/PlannerNavbar';
+import { BottomTabBar } from './components/layout/BottomTabBar';
 import { ChildContextSelector } from './components/layout/ChildContextSelector';
 import { TodayView } from './views/TodayView';
 import { EducationView } from './views/EducationView';
@@ -22,18 +23,18 @@ const AppContent: React.FC = () => {
   const activeChildName = activeChild ? activeChild.name : 'Família Unificada';
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col font-sans selection:bg-warm-peach selection:text-ink">
+    <div className="min-h-screen bg-canvas flex flex-col font-sans selection:bg-warm-peach selection:text-ink pb-20 md:pb-0">
       {/* Top Planner Header */}
       <PlannerHeader
         onOpenSOS={() => setIsSOSOpen(true)}
         activeChildName={activeChildName}
       />
 
-      {/* Luxury Planner Navigation Bar */}
+      {/* Desktop Navigation Bar (Sticky Top) */}
       <PlannerNavbar activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-5 sm:py-8 space-y-5 sm:space-y-7">
         
         {/* Child Context Selector (Always Accessible) */}
         <section aria-label="Seletor de Perfil Infantil">
@@ -45,7 +46,12 @@ const AppContent: React.FC = () => {
 
         {/* Dynamic Views Rendering */}
         <section className="transition-all duration-300">
-          {activeTab === 'today' && <TodayView onOpenSOS={() => setIsSOSOpen(true)} />}
+          {activeTab === 'today' && (
+            <TodayView
+              onOpenSOS={() => setIsSOSOpen(true)}
+              onNavigateTab={(tab) => setActiveTab(tab)}
+            />
+          )}
           {activeTab === 'education' && <EducationView />}
           {activeTab === 'activities' && <ActivitiesView />}
           {activeTab === 'health' && <HealthView />}
@@ -55,6 +61,9 @@ const AppContent: React.FC = () => {
         </section>
 
       </main>
+
+      {/* Mobile Ergonomic Bottom Tab Bar (Thumb Zone) */}
+      <BottomTabBar activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Universal Emergency SOS Modal (1-Click) */}
       <EmergencySOSModal

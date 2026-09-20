@@ -19,7 +19,6 @@ interface NavItem {
   id: TabType;
   label: string;
   icon: React.ElementType;
-  badge?: string;
 }
 
 export const PlannerNavbar: React.FC<Props> = ({ activeTab, onSelectTab }) => {
@@ -34,8 +33,8 @@ export const PlannerNavbar: React.FC<Props> = ({ activeTab, onSelectTab }) => {
   ];
 
   return (
-    <nav className="w-full bg-surface-subtle/80 backdrop-blur-md border-b border-border-linen sticky top-[73px] z-30 px-4 sm:px-8 py-2 overflow-x-auto shadow-warm-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-start sm:justify-center gap-1.5 min-w-max pb-1 sm:pb-0">
+    <nav className="hidden md:block w-full bg-surface-subtle/80 backdrop-blur-md border-b border-border-linen sticky top-[73px] z-30 px-4 sm:px-8 py-2 overflow-x-auto shadow-warm-sm">
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 min-w-max">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -43,7 +42,7 @@ export const PlannerNavbar: React.FC<Props> = ({ activeTab, onSelectTab }) => {
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm font-sans font-medium transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs lg:text-sm font-sans font-medium transition-all duration-300 ${
                 isActive
                   ? 'bg-surface text-warm-terracotta-dark shadow-warm-md border border-border-peach scale-[1.02] font-semibold'
                   : 'bg-transparent text-ink-muted hover:bg-surface/60 hover:text-ink border border-transparent'
