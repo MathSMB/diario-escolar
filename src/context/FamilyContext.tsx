@@ -113,7 +113,40 @@ const STORAGE_PREFIX = 'diario_infantil_';
 function loadOrSeed<T>(key: string, seed: T): T {
   try {
     const item = localStorage.getItem(STORAGE_PREFIX + key);
-    return item ? JSON.parse(item) : seed;
+    if (!item) return seed;
+    const parsed = JSON.parse(item);
+    // Se a base salva for anterior à adição dos novos filhos (Laura e Lucas), atualiza com a nova semente
+    if (key === 'children' && Array.isArray(parsed) && parsed.length < INITIAL_CHILDREN.length) {
+      return seed;
+    }
+    if (key === 'schedules' && Array.isArray(parsed) && parsed.length < INITIAL_SCHEDULE.length) {
+      return seed;
+    }
+    if (key === 'medications' && Array.isArray(parsed) && parsed.length < INITIAL_MEDICATIONS.length) {
+      return seed;
+    }
+    if (key === 'vaccines' && Array.isArray(parsed) && parsed.length < INITIAL_VACCINES.length) {
+      return seed;
+    }
+    if (key === 'growth_records' && Array.isArray(parsed) && parsed.length < INITIAL_GROWTH.length) {
+      return seed;
+    }
+    if (key === 'prescriptions' && Array.isArray(parsed) && parsed.length < INITIAL_PRESCRIPTIONS.length) {
+      return seed;
+    }
+    if (key === 'activities' && Array.isArray(parsed) && parsed.length < INITIAL_ACTIVITIES.length) {
+      return seed;
+    }
+    if (key === 'assessments' && Array.isArray(parsed) && parsed.length < INITIAL_ASSESSMENTS.length) {
+      return seed;
+    }
+    if (key === 'memories' && Array.isArray(parsed) && parsed.length < INITIAL_MEMORIES.length) {
+      return seed;
+    }
+    if (key === 'documents' && Array.isArray(parsed) && parsed.length < INITIAL_DOCUMENTS.length) {
+      return seed;
+    }
+    return parsed;
   } catch {
     return seed;
   }

@@ -4,6 +4,29 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 11: População Completa da Base Familiar com 4 Filhos (Helena, Mateo, Laura e Lucas) para Testes de Exportação e Portabilidade
+**Data:** 20/09/2026  
+**Status:** Concluído, Validado e Comitado
+
+### 1. Modelagem & População dos 4 Filhos (`mockData.ts`)
+Para permitir testes aprofundados e validação em larga escala de exportação de dados (Planilhas Abertas .ODS, .XLSX e Pacote ZIP de Fotos), a base de demonstração foi expandida de 2 para **4 filhos completos**:
+1. **Helena (7 anos, 2º Ano Fundamental):** Foco em alfabetização, ballet, inglês lúdico, amigdalite em tratamento com antibiótico e alergia a amendoim/penicilina.
+2. **Mateo (4 anos, Jardim II):** Foco em psicomotricidade, natação infantil, intolerância transitória à lactose e rotinas de autonomia.
+3. **Laura (12 anos, 7º Ano Fundamental):** Foco em biologia, olimpíada de robótica/Arduino, voleibol, hebiatria/oftalmologia e rinite alérgica.
+4. **Lucas (2 anos, Maternal I):** Foco em primeira infância, puericultura, musicalização, natação baby, vitamina D3 e cuidados de dermatite atópica.
+
+### 2. Cobertura de Dados Populados em Todas as 16 Abas
+- **Ficha SOS & Contatos:** Pediatras, CRMs, hospitais de referência, carteirinhas de convênio, tipos sanguíneos e protocolos de emergência.
+- **Grades Escolares & Avaliações:** Horários semanais, matérias, professores, salas, mochilas e notas/provas.
+- **Saúde & Cuidados:** Medicamentos ativos, receitas médicas sincronizadas com fotos, logs de doses por cuidadores, carteira de vacinas (PNI e particulares) e curvas de crescimento (OMS).
+- **Atividades, Tarefas & Memórias:** Checklists diários com estrelas, eventos sociais, fotos do álbum, marcos de desenvolvimento e desenhos digitalizados.
+- **Cofre:** Certidões de nascimento, contratos escolares, laudos médicos e carteiras de vacinação digitais.
+
+### 3. Hidratação Inteligente (`FamilyContext.tsx`)
+- Atualizado o loader `loadOrSeed` para detectar automaticamente bases antigas em cache e hidratar a nova árvore completa com os 4 filhos e todas as tabelas normalizadas.
+
+---
+
 ## 📅 Registro 10: Criação das Skills (Copywriting & Admin), Landing Page de Recepção & Painel Administrativo de Gestão Global
 **Data:** 20/09/2026  
 **Status:** Concluído, Validado e Comitado
