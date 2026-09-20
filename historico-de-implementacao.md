@@ -4,6 +4,36 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 12: Correção Ergonômica do Modal SOS, Central de Lembretes & Notificações (Sininho) e Expansão Direta dos 7 Temas no Menu Superior
+**Data:** 20/09/2026  
+**Status:** Concluído, Validado e Comitado
+
+### 1. Correção Visual & Alinhamento do Cartão SOS (`EmergencySOSModal.tsx`)
+- **Problema Apontado no Print/Áudio:** O texto do convênio estava truncado com reticências (`SulAmérica Espe...`) e os botões *"Ligar"* do Pediatra e do Hospital de Referência estavam espremidos e vazando para fora do card.
+- **Solução Implementada:**
+  - **Convênio:** Remoção do truncamento forçado e adoção de quebra de linha fluida (`line-clamp-2`, `leading-snug`, `break-words`).
+  - **Cards de Contato de Emergência:** Estrutura responsiva com layout flexível onde os botões *"Ligar"* possuem tamanho garantido, ícone e texto completos (`Ligar`), perfeitamente contidos dentro das bordas com cantos arredondados e sombras aveludadas.
+  - Ajuste de espaçamentos e dimensões para visualização impecável em todas as resoluções.
+
+### 2. Central de Lembretes & Notificações Ativa (`NotificationsModal.tsx` & `PlannerHeader.tsx`)
+- **Demanda do Usuário:** Compreensão e funcionalidade real para o ícone de sino (`🔔`) no cabeçalho com dados mockados úteis.
+- **Implementação:**
+  - **Badge Dinâmico no Cabeçalho:** Indicador com contador numérico de avisos pendentes (*3 não lidas*).
+  - **Modal Interativo de Lembretes:**
+    - 💊 **Dose Próxima de Remédio:** Lembrete da dose de *Amoxicilina 250mg* da Helena às 16:00 (com contagem regressiva).
+    - 🎒 **Aviso Escolar:** Alerta da *Feira de Ciências* no Colégio Santa Teresa para levar o terrário e avental.
+    - 🩺 **Consulta Médica:** Lembrete da consulta de Puericultura do *Lucas* agendada com o Dr. Fernando.
+    - ⭐ **Autonomia da Família:** Notificação de conclusão de tarefas da *Laura* com ganho de estrelas.
+  - **Filtros e Ações:** Filtro por abas (*Todas, Saúde, Escola*), marcação de mensagens como lidas e botão para limpar histórico.
+
+### 3. Exibição Direta dos 7 Temas na Barra de Navegação (`PlannerNavbar.tsx`)
+- **Demanda do Usuário:** Adicionar mais temas diretamente visíveis no menu superior em vez de escondê-los em dropdowns.
+- **Implementação:**
+  - Todos os 7 temas prioritários (*Hoje*, *Educação*, *Saúde*, *Tarefas*, *Atividades*, *Memórias*, *Cofre*) agora ficam visíveis lado a lado diretamente em telas desktop e laptops (≥ 768px).
+  - Pílulas táteis com micro-animações, ícones suaves e contraste equilibrado sem necessidade de rolagens ou menus ocultos.
+
+---
+
 ## 📅 Registro 11: População Completa da Base Familiar com 4 Filhos (Helena, Mateo, Laura e Lucas) para Testes de Exportação e Portabilidade
 **Data:** 20/09/2026  
 **Status:** Concluído, Validado e Comitado

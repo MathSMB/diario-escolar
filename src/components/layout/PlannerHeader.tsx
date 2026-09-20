@@ -15,6 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import { UserProfileModal } from '../auth/UserProfileModal';
 import { DataExportModal } from '../modules/DataExportModal';
 import { AdminDashboardModal } from '../admin/AdminDashboardModal';
+import { NotificationsModal } from '../modules/NotificationsModal';
 
 interface Props {
   onOpenSOS: () => void;
@@ -27,6 +28,7 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on click outside
@@ -92,10 +94,15 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
 
             {/* Notification Bell */}
             <button
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-canvas-sand border border-border-linen hover:bg-surface text-ink-muted hover:text-ink flex items-center justify-center transition-all duration-200 shadow-warm-sm"
-              title="Lembretes e avisos do dia"
+              type="button"
+              onClick={() => setIsNotificationsOpen(true)}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-canvas-sand border border-border-linen hover:border-border-peach hover:bg-surface text-ink-muted hover:text-ink flex items-center justify-center transition-all duration-200 shadow-warm-sm relative"
+              title="Central de Lembretes & Avisos (3 pendentes)"
             >
               <Bell className="w-4 h-4 stroke-[1.75]" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-warm-terracotta text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface">
+                3
+              </span>
             </button>
 
             {/* Fast Emergency SOS Button (SLA: 1 Click Access) */}
@@ -234,6 +241,12 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
       <AdminDashboardModal
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
+      />
+
+      {/* Notifications & Reminders Modal */}
+      <NotificationsModal
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
       />
     </>
   );
