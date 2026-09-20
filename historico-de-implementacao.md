@@ -4,6 +4,28 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 13: Ajuste Ergonômico do Cabeçalho, Desativação de Cabeçalho Fixo (Sticky) e Reposicionamento da Exportação no Menu de Perfil
+**Data:** 20/09/2026  
+**Status:** Concluído, Validado e Comitado
+
+### 1. Desativação do Cabeçalho Fixo (`sticky`) a Pedido do Usuário
+- **Problema:** A fixação forçada do cabeçalho e da barra de navegação no topo da tela (`sticky top-0`) ocupava espaço vertical contínuo durante a rolagem.
+- **Solução Implementada:**
+  - Removido `sticky top-0` do `<header>` em `PlannerHeader.tsx` e `LandingReceptionView.tsx`.
+  - Removido `sticky` da barra de navegação em `PlannerNavbar.tsx`.
+  - A rolagem da página agora flui de maneira 100% natural, leve e desimpedida, garantindo máxima área de leitura para os cards e rotinas.
+
+### 2. Reposicionamento do Botão "Exportar Dados"
+- **Problema:** A presença do botão de exportação diretamente na barra superior causava poluição visual e quebras de linha indesejadas no título editorial ("Refúgio Familiar") e na data.
+- **Solução Implementada:**
+  - O botão *"Exportar Dados"* foi removido da barra superior do cabeçalho.
+  - A funcionalidade de **Exportação de Planilhas Abertas (.ODS/.XLSX) e Pacote ZIP de Fotos** permanece perfeitamente acessível nos locais ideais de configuração e gestão de arquivos:
+    1. **Menu de Perfil do Usuário:** Item *"Exportar Planilha & Imagens"* no dropdown do avatar (canto superior direito).
+    2. **Módulo Cofre de Documentos (`DocumentsVaultView.tsx`):** Acesso duplo via botão de cabeçalho do módulo e banner de soberania de dados.
+  - O cabeçalho superior recuperou seu espaçamento limpo e elegante: logotipo, título em linha única, pílula de status diário, sininho de notificações interativo com badge, botão de SOS rápido e menu de perfil.
+
+---
+
 ## 📅 Registro 12: Correção Ergonômica do Modal SOS, Central de Lembretes & Notificações (Sininho) e Expansão Direta dos 7 Temas no Menu Superior
 **Data:** 20/09/2026  
 **Status:** Concluído, Validado e Comitado

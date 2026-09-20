@@ -34,7 +34,7 @@ export const PlannerNavbar: React.FC<Props> = ({ activeTab, onSelectTab }) => {
   ];
 
   return (
-    <nav className="hidden md:block w-full bg-surface-subtle/90 backdrop-blur-md border-b border-border-linen sticky top-[73px] z-30 px-3 sm:px-6 py-2 shadow-warm-sm transition-all">
+    <nav className="relative z-20 hidden md:block w-full bg-surface-subtle/90 backdrop-blur-md border-b border-border-linen px-3 sm:px-6 py-2 shadow-warm-sm transition-all">
       <div className="max-w-6xl mx-auto flex items-center justify-center gap-1 sm:gap-1.5 lg:gap-2">
         {allNavItems.map((item) => {
           const Icon = item.icon;

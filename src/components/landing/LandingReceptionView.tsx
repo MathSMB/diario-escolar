@@ -37,8 +37,8 @@ export const LandingReceptionView: React.FC<Props> = ({
         <div className="absolute -bottom-40 left-1/3 w-[500px] h-[500px] rounded-full bg-border-peach/30 blur-3xl" />
       </div>
 
-      {/* Top Navigation */}
-      <header className="w-full bg-surface/80 backdrop-blur-md border-b border-border-linen sticky top-0 z-40 px-4 sm:px-8 py-3.5 transition-all">
+      {/* Top Floating Glass Navigation */}
+      <header className="w-full bg-surface/80 backdrop-blur-md border-b border-border-linen px-4 sm:px-8 py-3.5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
           {/* Logo */}
