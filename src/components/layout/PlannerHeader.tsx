@@ -1,7 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShieldAlert, Bell, Calendar, Sparkles, BookOpen, ChevronDown, LogOut, Settings } from 'lucide-react';
+import {
+  ShieldAlert,
+  Bell,
+  Calendar,
+  Sparkles,
+  BookOpen,
+  ChevronDown,
+  LogOut,
+  Settings,
+  FileSpreadsheet,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserProfileModal } from '../auth/UserProfileModal';
+import { DataExportModal } from '../modules/DataExportModal';
 
 interface Props {
   onOpenSOS: () => void;
@@ -12,6 +23,7 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on click outside
@@ -64,6 +76,16 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
               <span className="w-2 h-2 rounded-full bg-calm-sage animate-ping" />
               <span>Rotina Harmoniosa • 2 aulas, 1 remédio</span>
             </div>
+
+            {/* Export & Data Sovereignty Action */}
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-canvas-sand border border-border-linen hover:border-border-peach hover:bg-surface text-ink text-xs font-sans font-medium transition-all shadow-warm-sm"
+              title="Exportar dados em planilha aberta (.ODS/.XLSX) e baixar imagens"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-warm-terracotta" />
+              <span className="hidden sm:inline">Exportar Dados</span>
+            </button>
 
             {/* Notification Bell */}
             <button
@@ -152,6 +174,18 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
                       type="button"
                       onClick={() => {
                         setIsUserMenuOpen(false);
+                        setIsExportModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-sans text-ink hover:bg-canvas-sand rounded-xl transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-calm-sage" />
+                      <span>Exportar Planilha & Imagens</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
                         logout();
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 text-xs font-sans text-red-600 hover:bg-red-50 rounded-xl transition-colors mt-1"
@@ -173,6 +207,12 @@ export const PlannerHeader: React.FC<Props> = ({ onOpenSOS, activeChildName }) =
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      {/* Data Sovereignty & Export Modal */}
+      <DataExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
       />
     </>
   );

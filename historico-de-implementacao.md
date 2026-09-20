@@ -4,6 +4,52 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 9: Exportação de Planilhas em Formato Aberto (ODS / XLSX / CSV) & Download de Imagens em Pastas (.ZIP)
+**Data:** 20/09/2026  
+**Status:** Concluído, Validado e Comitado
+
+### 1. Soberania e Portabilidade de Dados a Custo Zero
+- **Demanda do Usuário:** Funcionalidade para salvar todos os dados e arquivos digitados/anexados em formato de planilha aberta (lida em LibreOffice, OpenOffice, Google Planilhas, Numbers, Excel), além de baixar todas as fotos organizadas em pastas compactadas (.ZIP).
+- **Implementação de Formatos Abertos (`exportService.ts`):**
+  - **Formato Aberto ODS (OpenDocument Spreadsheet - ISO/IEC 26300):** Formato padrão internacional não proprietário, livre de licenças.
+  - **Formato XLSX:** Pasta de trabalho multi-abas formatada.
+  - **Formato CSV Universal (UTF-8 com BOM):** Texto separado por vírgula compatível com qualquer software sem corromper acentos da língua portuguesa.
+  - **Estrutura de 16 Abas Exportadas:**
+    1. *Ficha SOS & Perfis*
+    2. *Horários Escolares*
+    3. *Avaliações Escolares*
+    4. *Medicamentos*
+    5. *Doses Ministradas*
+    6. *Receitas Médicas*
+    7. *Vacinas*
+    8. *Consultas Médicas*
+    9. *Crescimento*
+    10. *Tarefas & Rotina*
+    11. *Extracurriculares*
+    12. *Eventos Sociais*
+    13. *Memórias*
+    14. *Marcos de Crescimento*
+    15. *Cofre de Documentos*
+    16. *Notas & Recados*
+
+### 2. Empacotamento de Imagens e Mídias em Pastas Compactadas (`imagePackService.ts`)
+- Utilização de `JSZip` para processamento no lado do cliente (100% no navegador, sem custos de servidor e com privacidade total).
+- Separação em pastas temáticas:
+  - `01_Saude_e_Receitas/` (Fotos das receitas médicas com nomes de arquivo identificados por data, filho e médico)
+  - `02_Memorias_e_Momentos/` (Fotos dos momentos, datas comemorativas e passeios)
+  - `03_Artes_e_Criatividade/` (Obras e desenhos das crianças)
+  - `04_Documentos_e_Cofre/` (Manifesto e inventário de certidões e contratos)
+  - `05_Relatorio_e_Planilhas/` (Cópia da planilha ODS e XLSX inclusa no mesmo pacote)
+  - Arquivo `LEIA-ME_PORTABILIDADE.txt` atestando a soberania dos dados.
+- Feedback de progresso em tempo real durante a compactação.
+
+### 3. Interface de Acesso & Modal de Exportação (`DataExportModal.tsx`)
+- Acesso em 1 clique pelo menu superior (`PlannerHeader.tsx`), pelo menu de usuário e por banner destacado no Cofre Familiar (`DocumentsVaultView.tsx`).
+- Seletor visual de formatos (.ODS, .XLSX, .CSV), botão de download do ZIP de imagens e exportação de backup bruto JSON.
+- Guia integrado de como salvar no Google Drive, Dropbox ou banco de dados Postgres/Supabase a custo zero.
+
+---
+
 ## 📅 Registro 8: Sistema Completo de Autenticação, Cadastro de Usuários & Login via OAuth (Google / Apple / E-mail)
 **Data:** 20/09/2026  
 **Status:** Concluído, Validado e Comitado

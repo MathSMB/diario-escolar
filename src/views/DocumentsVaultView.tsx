@@ -11,7 +11,11 @@ import {
   Search,
   X,
   Lock,
+  FileSpreadsheet,
+  FolderArchive,
+  HardDrive,
 } from 'lucide-react';
+import { DataExportModal } from '../components/modules/DataExportModal';
 
 export const DocumentsVaultView: React.FC = () => {
   const { documents, addDocument, selectedChildId, activeChild } = useFamily();
@@ -19,6 +23,7 @@ export const DocumentsVaultView: React.FC = () => {
   const [activeFolder, setActiveFolder] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [previewFile, setPreviewFile] = useState<any>(null);
 
   // Upload Form
@@ -87,12 +92,47 @@ export const DocumentsVaultView: React.FC = () => {
         </div>
 
         {/* Action Button */}
+        <div className="flex items-center gap-2.5 self-start md:self-auto flex-wrap">
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-canvas-sand hover:bg-surface border border-border-peach text-warm-terracotta-dark font-sans text-xs sm:text-sm font-semibold transition-all shadow-warm-sm"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-warm-terracotta" />
+            <span>Exportar Dados &amp; ZIP</span>
+          </button>
+
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-warm-terracotta hover:bg-warm-terracotta-dark text-white font-sans text-xs sm:text-sm font-semibold transition-all duration-300 shadow-warm-sm"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Enviar Novo Documento</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Data Sovereignty & Open Spreadsheet Export Banner */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-warm-peach-light/80 to-warm-sage-light/60 border border-border-peach flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-warm-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 bg-surface rounded-2xl border border-border-peach text-warm-terracotta shadow-sm flex-shrink-0">
+            <HardDrive className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-serif text-sm sm:text-base font-bold text-ink">
+              Soberania de Dados &amp; Portabilidade Total (Custo Zero)
+            </h4>
+            <p className="text-xs text-ink-muted">
+              Exporte todas as 16 tabelas em planilha aberta (<strong>.ODS</strong> compatível com LibreOffice, Google Sheets, Numbers e Excel) e baixe todas as fotos organizadas em pastas compactadas (<strong>.ZIP</strong>).
+            </p>
+          </div>
+        </div>
         <button
-          onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-warm-terracotta hover:bg-warm-terracotta-dark text-white font-sans text-xs sm:text-sm font-semibold transition-all duration-300 shadow-warm-sm self-start md:self-auto"
+          type="button"
+          onClick={() => setShowExportModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-surface hover:bg-canvas-sand text-warm-terracotta-dark border border-border-peach font-sans text-xs sm:text-sm font-semibold transition-all shadow-warm-sm hover:shadow-warm-md flex-shrink-0 self-start sm:self-auto"
         >
-          <UploadCloud className="w-4 h-4" />
-          <span>Enviar Novo Documento</span>
+          <FolderArchive className="w-4 h-4 text-warm-terracotta" />
+          <span>Baixar Pacote Completo</span>
         </button>
       </div>
 
@@ -326,6 +366,13 @@ export const DocumentsVaultView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Data Export & Open Spreadsheet Modal */}
+      <DataExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+      />
     </div>
   );
 };
+
