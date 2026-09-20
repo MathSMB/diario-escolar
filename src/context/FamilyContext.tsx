@@ -45,6 +45,9 @@ interface FamilyContextType {
   setSelectedChildId: (id: string) => void;
   activeChild: Child | undefined;
   children: Child[];
+  addChild: (child: Omit<Child, 'id'>) => string;
+  updateChild: (child: Child) => void;
+  deleteChild: (id: string) => void;
   
   // Schedules & Education
   schedules: ClassScheduleItem[];
@@ -110,7 +113,7 @@ function loadOrSeed<T>(key: string, seed: T): T {
 export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectedChildId, setSelectedChildId] = useState<string>('helena');
 
-  const [childrenList] = useState<Child[]>(() =>
+  const [childrenList, setChildrenList] = useState<Child[]>(() =>
     loadOrSeed('children', INITIAL_CHILDREN)
   );
   const [schedules, setSchedules] = useState<ClassScheduleItem[]>(() =>
@@ -172,6 +175,10 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Sync to local storage on changes
   useEffect(() => {
+    localStorage.setItem(STORAGE_PREFIX + 'children', JSON.stringify(childrenList));
+  }, [childrenList]);
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_PREFIX + 'schedules', JSON.stringify(schedules));
   }, [schedules]);
 
@@ -200,6 +207,49 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [documents]);
 
   const activeChild = childrenList.find((c) => c.id === selectedChildId);
+
+  // Child / Family Member Actions
+  const addChild = (childData: Omit<Child, 'id'>): string => {
+    const id = 'child-' + Date.now();
+    const initials =
+      childData.initials ||
+      (childData.name ? childData.name.trim().charAt(0).toUpperCase() : 'C');
+    const newChild: Child = {
+      ...childData,
+      id,
+      initials,
+    };
+    setChildrenList((prev) => [...prev, newChild]);
+    setSelectedChildId(id);
+    return id;
+  };
+
+  const updateChild = (updated: Child) => {
+    const initials =
+      updated.initials ||
+      (updated.name ? updated.name.trim().charAt(0).toUpperCase() : 'C');
+    const normalized: Child = {
+      ...updated,
+      initials,
+    };
+    setChildrenList((prev) =>
+      prev.map((c) => (c.id === updated.id ? normalized : c))
+    );
+  };
+
+  const deleteChild = (id: string) => {
+    setChildrenList((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      if (selectedChildId === id) {
+        if (next.length > 0) {
+          setSelectedChildId(next[0].id);
+        } else {
+          setSelectedChildId('all');
+        }
+      }
+      return next;
+    });
+  };
 
   // Actions
   const toggleScheduleMaterial = (scheduleId: string, materialId: string) => {
@@ -369,6 +419,9 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setSelectedChildId,
         activeChild,
         children: childrenList,
+        addChild,
+        updateChild,
+        deleteChild,
         schedules,
         assessments,
         meetings,

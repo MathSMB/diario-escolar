@@ -4,6 +4,28 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 4: Gestão Completa de Membros da Família (CRUD de Filhos/Perfis) & Conexão Dinâmica SOS
+**Data:** 20/09/2026  
+**Status:** Concluído e Validado
+
+### 1. Gestão Dinâmica de Membros da Família (Perfis Infantis)
+- **Problema:** A barra de seleção de perfis (*Helena, Mateo, Família Unificada*) continha dados mockados fixos e não oferecia meios para adicionar novos filhos, editar dados existentes (escola, série, idade, cores do avatar, ficha médica) ou remover perfis.
+- **Solução Arquitetural & UX:**
+  - **Estado Centralizado no `FamilyContext`:** Implementados `addChild`, `updateChild` e `deleteChild` com sincronização contínua no `localStorage` sob a chave `diario_infantil_children`.
+  - **Modal de Perfil do Filho (`ChildProfileModal.tsx`):**
+    - Dados gerais: Nome, Data de Nascimento com cálculo amigável de idade, Escola e Série.
+    - Seletor tátil de paletas de cor exclusivas (*Pêssego Aveludado, Verde Sálvia, Azul Ardósia, Terracota, Lavanda, Âmbar*) com avatar preview em tempo real.
+    - Ficha de Saúde & SOS: Tipo Sanguíneo, Alergias e Restrições dinâmicas (chips interativos), Pediatra (Nome, CRM, Telefone), Hospital de Referência e Plano de Saúde.
+    - Exclusão com confirmação segura e transição automática de contexto para o próximo filho disponível.
+  - **Painel de Gestão da Família (`FamilyManagerModal.tsx`):** Visão geral de todos os perfis da família, permitindo alternar contextos, editar e adicionar novos membros em 1 clique.
+  - **Seletor de Contexto (`ChildContextSelector.tsx`):**
+    - Listagem dinâmica baseada nos filhos cadastrados no contexto.
+    - Botão de edição rápida (✏️) em cada perfil e botão "+ Adicionar Filho(a)".
+    - Botão "Gerenciar Família" integrado com atalho para o painel global.
+  - **Ficha de Emergência SOS (`EmergencySOSModal.tsx`):** Vinculada dinamicamente ao `activeChild`, exibindo tipo sanguíneo real, peso recente, alergias críticas e discagem direta para pediatra/hospital.
+
+---
+
 ## 📅 Registro 3: Correção de Layout nos Cards Rápidos & Gestão Completa de Horários Escolares
 **Data:** 20/09/2026  
 **Status:** Concluído e Validado
