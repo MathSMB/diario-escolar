@@ -252,3 +252,17 @@ export interface DocumentFile {
   uploadDate: string;
   description?: string;
 }
+
+export type UserRole = 'Mamãe' | 'Papai' | 'Avós' | 'Cuidador(a)' | 'Tio(a)' | 'Outro';
+
+export interface UserSession {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  role: UserRole;
+  authProvider: 'email' | 'google' | 'apple' | 'guest';
+  createdAt: string;
+  lastLoginAt: string;
+}
+

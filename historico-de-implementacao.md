@@ -4,6 +4,35 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 8: Sistema Completo de Autenticação, Cadastro de Usuários & Login via OAuth (Google / Apple / E-mail)
+**Data:** 20/09/2026  
+**Status:** Concluído, Validado e Comitado
+
+### 1. Portal de Autenticação & Cadastro (`AuthPortal.tsx`)
+- **Design System Acolhedor:** Tela inicial alinhada à estética de luxo e papelaria premium (*Creme de Linho*, *Terracota*, *Verde Sálvia* e tipografia *Fraunces*).
+- **Abas Alternáveis:** *Entrar* e *Criar Minha Conta*.
+- **Login Tradicional & Cadastro:**
+  - Criação de conta com Nome, E-mail, Senha com visualizador de visibilidade (👁️) e seleção do Papel Familiar (*Mamãe*, *Papai*, *Avós*, *Cuidador(a)*, *Tio(a)*, *Outro*).
+  - Validações em tempo real de integridade de senha e e-mail único.
+- **Botões Oficiais de OAuth (Google & Apple):**
+  - Ícones SVG oficiais e experiência interativa de login em 1 clique com geração de perfil sincronizado.
+- **Acesso Rápido para Avaliação:**
+  - Botões de 1 clique para testar instantaneamente como *👩 Mamãe Mariana* ou *👨 Papai Carlos*.
+  - Modo *Visitante / Convidado* para navegação imediata.
+
+### 2. Contexto de Autenticação & Sessão (`AuthContext.tsx`)
+- Gerenciamento de estado de usuário (`UserSession`), status de autenticação e persistência contínua em `localStorage` (`refugio_familiar_user_session` e `refugio_familiar_registered_users`).
+- Métodos integrados: `loginWithEmail`, `registerWithEmail`, `loginWithOAuth`, `loginAsGuest`, `updateProfile` e `logout`.
+
+### 3. Gestão de Perfil & Menu do Usuário (`PlannerHeader.tsx` & `UserProfileModal.tsx`)
+- **Avatar e Dropdown no Topo:** Exibição do avatar do usuário ativo, primeiro nome e papel familiar na barra superior, ao lado do botão SOS.
+- **Modal de Perfil do Usuário:** Permite alterar nome de exibição, papel familiar, escolher avatares predefinidos ou informar URL de foto personalizada, além de realizar logout seguro.
+
+### 4. Configuração para Produção & Variáveis de Ambiente
+- Criados `src/config/authConfig.ts`, `.env.example` e `src/vite-env.d.ts` com instruções para inserção das chaves reais do Google Cloud Console (`VITE_GOOGLE_CLIENT_ID`) e Apple Developer (`VITE_APPLE_CLIENT_ID`).
+
+---
+
 ## 📅 Registro 7: Otimização da Barra de Navegação (Eliminação de Rolagem Horizontal)
 **Data:** 20/09/2026  
 **Status:** Concluído e Validado

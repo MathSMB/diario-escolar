@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { FamilyProvider, useFamily } from './context/FamilyContext';
 import { PlannerHeader } from './components/layout/PlannerHeader';
 import { PlannerNavbar } from './components/layout/PlannerNavbar';
@@ -12,19 +13,39 @@ import { ProductivityView } from './views/ProductivityView';
 import { MemoriesView } from './views/MemoriesView';
 import { DocumentsVaultView } from './views/DocumentsVaultView';
 import { EmergencySOSModal } from './components/modules/EmergencySOSModal';
+import { AuthPortal } from './components/auth/AuthPortal';
 import { TabType } from './types';
-import { Heart, ShieldCheck } from 'lucide-react';
+import { Heart, ShieldCheck, BookOpen } from 'lucide-react';
 
 const AppContent: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
   const { selectedChildId, setSelectedChildId, activeChild } = useFamily();
   const [activeTab, setActiveTab] = useState<TabType>('today');
   const [isSOSOpen, setIsSOSOpen] = useState<boolean>(false);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-4">
+        <div className="w-14 h-14 rounded-3xl bg-surface border border-border-peach flex items-center justify-center text-warm-terracotta shadow-warm-md animate-pulse mb-4">
+          <BookOpen className="w-7 h-7" />
+        </div>
+        <p className="font-serif text-lg font-medium text-ink">Refúgio Familiar</p>
+        <p className="font-sans text-xs text-ink-muted mt-1">Carregando ambiente acolhedor...</p>
+      </div>
+    );
+  }
+
+  // Se não estiver logado, exibe a tela de Login / Cadastro / OAuth
+  if (!isAuthenticated) {
+    return <AuthPortal />;
+  }
+
   const activeChildName = activeChild ? activeChild.name : 'Família Unificada';
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col font-sans selection:bg-warm-peach selection:text-ink pb-20 md:pb-0">
-      {/* Top Planner Header */}
+    <div className="min-h-screen bg-canvas flex flex-col font-sans selection:bg-warm-peach selection:text-ink pb-20 md:pb-0 animate-in fade-in duration-300">
+      {/* Top Planner Header with Profile and SOS */}
       <PlannerHeader
         onOpenSOS={() => setIsSOSOpen(true)}
         activeChildName={activeChildName}
@@ -98,8 +119,10 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <FamilyProvider>
-      <AppContent />
-    </FamilyProvider>
+    <AuthProvider>
+      <FamilyProvider>
+        <AppContent />
+      </FamilyProvider>
+    </AuthProvider>
   );
 };
