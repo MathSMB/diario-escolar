@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFamily } from '../context/FamilyContext';
 import {
   GraduationCap,
@@ -17,8 +17,15 @@ import {
   Camera,
   FolderLock,
   Check,
+  Heart,
+  Users,
+  Settings,
+  Edit2,
+  Plus,
 } from 'lucide-react';
-import { TabType } from '../types';
+import { TabType, Child } from '../types';
+import { ChildProfileModal } from '../components/modules/ChildProfileModal';
+import { FamilyManagerModal } from '../components/modules/FamilyManagerModal';
 
 interface Props {
   onOpenSOS: () => void;
@@ -29,6 +36,11 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
   const {
     activeChild,
     selectedChildId,
+    setSelectedChildId,
+    children,
+    addChild,
+    updateChild,
+    deleteChild,
     schedules,
     tasks,
     medications,
@@ -38,6 +50,19 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
     toggleTask,
     logMedicationDose,
   } = useFamily();
+
+  // Modal States
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [childToEdit, setChildToEdit] = useState<Child | null>(null);
+  const [isFamilyManagerOpen, setIsFamilyManagerOpen] = useState(false);
+
+  const handleSaveChild = (childData: Omit<Child, 'id'> | Child) => {
+    if ('id' in childData && childData.id) {
+      updateChild(childData as Child);
+    } else {
+      addChild(childData);
+    }
+  };
 
   const childName = activeChild ? activeChild.name : 'Família Unificada';
 
@@ -87,9 +112,13 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
   return (
     <div className="space-y-6 sm:space-y-7">
       
-      {/* 1. Header Greeting & Dynamic Stat Pills */}
-      <div className="p-5 sm:p-7 rounded-3xl bg-surface border border-border-peach/60 shadow-warm-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      {/* 1. Unified Hero Planner Header & Context Switcher (Unificado em um único cartão) */}
+      <div className="p-5 sm:p-7 rounded-3xl bg-surface border border-border-peach/70 shadow-warm-md relative overflow-hidden flex flex-col gap-5">
+        {/* Top Decorative Line */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-warm-terracotta via-warm-peach to-calm-sage" />
+
+        {/* Top Bar: Module Badge, Date, SOS Button & Gerenciar Família Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-warm-peach text-warm-terracotta-dark">
               Visão Hoje • Hub Central
@@ -103,24 +132,173 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
             </span>
           </div>
 
-          <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-ink mt-1">
-            {selectedChildId === 'all'
-              ? 'Rotina Integrada da Família'
-              : `Dia de ${childName}`}
-          </h2>
-          <p className="text-xs sm:text-sm text-ink-muted font-sans mt-0.5">
-            Prioridades imediatas, doses farmacêuticas e checklist do dia.
-          </p>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            {/* Quick SOS Trigger */}
+            <button
+              type="button"
+              onClick={onOpenSOS}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-warm-peach-light hover:bg-warm-peach text-warm-terracotta-dark border border-warm-peach font-sans text-xs sm:text-sm font-semibold transition-all duration-300 shadow-warm-sm hover:scale-[1.02]"
+            >
+              <ShieldAlert className="w-4 h-4 text-warm-terracotta" />
+              <span>Ficha SOS de {activeChild ? activeChild.name : 'Família'}</span>
+            </button>
+
+            {/* Gerenciar Família Button */}
+            <button
+              type="button"
+              onClick={() => setIsFamilyManagerOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-canvas-sand hover:bg-surface border border-border-linen text-ink-muted hover:text-ink font-sans text-xs font-medium transition-all shadow-warm-sm"
+              title="Gerenciar todos os membros e perfis da família"
+            >
+              <Settings className="w-3.5 h-3.5 text-warm-terracotta" />
+              <span className="hidden xs:inline">Gerenciar Família</span>
+            </button>
+          </div>
         </div>
 
-        {/* Quick SOS Trigger */}
-        <button
-          onClick={onOpenSOS}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-warm-peach-light hover:bg-warm-peach text-warm-terracotta-dark border border-warm-peach font-sans text-xs sm:text-sm font-semibold transition-all duration-300 shadow-warm-sm self-start md:self-auto hover:scale-[1.02]"
-        >
-          <ShieldAlert className="w-4 h-4 text-warm-terracotta" />
-          <span>Ficha SOS da {childName}</span>
-        </button>
+        {/* Center: Main Title & Active Child Info */}
+        <div className="flex items-start sm:items-center gap-4">
+          <div
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-serif font-bold text-xl sm:text-2xl shadow-warm-sm border border-border-linen shrink-0 transition-transform ${
+              activeChild
+                ? activeChild.avatarColor
+                : 'bg-calm-slate/20 text-calm-slate-dark'
+            }`}
+          >
+            {activeChild ? (activeChild.initials || activeChild.name.charAt(0)) : <Users className="w-6 h-6" />}
+          </div>
+
+          <div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-ink leading-tight">
+              {selectedChildId === 'all'
+                ? 'Rotina Integrada da Família'
+                : `Dia de ${activeChild?.name || 'Helena'}`}
+            </h2>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-ink-muted mt-0.5">
+              {activeChild ? (
+                <>
+                  <span className="font-medium text-ink">
+                    {activeChild.age} • {activeChild.grade || activeChild.schoolName}
+                  </span>
+                  <span>—</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-medium text-ink">
+                    {children.length} filhos reunidos
+                  </span>
+                  <span>—</span>
+                </>
+              )}
+              <span>Prioridades imediatas, doses farmacêuticas e checklist do dia.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Row: Integrated Child Switcher Pills */}
+        <div className="pt-3.5 border-t border-border-linen/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
+            <span className="text-[11px] uppercase tracking-widest font-semibold text-ink-muted px-1 flex items-center gap-1.5 shrink-0">
+              <Heart className="w-3.5 h-3.5 text-warm-terracotta" />
+              Perfil Ativo:
+            </span>
+
+            {/* Child pills */}
+            {children.map((child) => {
+              const isSelected = selectedChildId === child.id;
+              return (
+                <div
+                  key={child.id}
+                  className={`group relative flex items-center rounded-2xl transition-all duration-300 shrink-0 ${
+                    isSelected
+                      ? 'bg-canvas-sand text-ink shadow-warm-md border border-border-peach scale-[1.02] ring-1 ring-warm-terracotta/30'
+                      : 'bg-transparent text-ink-muted hover:bg-canvas-sand/60 hover:text-ink border border-transparent'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelectedChildId(child.id)}
+                    className="flex items-center gap-2.5 px-3 py-1.5 text-left"
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center font-serif font-bold text-xs ${child.avatarColor}`}
+                    >
+                      {child.initials || child.name.charAt(0)}
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold text-xs font-sans tracking-tight">
+                          {child.name}
+                        </span>
+                        {isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-warm-terracotta animate-pulse" />
+                        )}
+                      </div>
+                      <span className="text-[10px] text-ink-muted font-normal block truncate max-w-[100px]">
+                        {child.age}
+                      </span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setChildToEdit(child);
+                      setIsProfileModalOpen(true);
+                    }}
+                    title={`Editar perfil de ${child.name}`}
+                    className="p-1 mr-1.5 rounded-lg text-ink-light hover:text-warm-terracotta hover:bg-warm-peach/30 transition-all opacity-60 group-hover:opacity-100"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+
+            {/* Unified Family Button */}
+            <button
+              type="button"
+              onClick={() => setSelectedChildId('all')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl transition-all duration-300 shrink-0 ${
+                selectedChildId === 'all'
+                  ? 'bg-canvas-sand text-ink shadow-warm-md border border-border-peach scale-[1.02] ring-1 ring-warm-terracotta/30'
+                  : 'bg-transparent text-ink-muted hover:bg-canvas-sand/60 hover:text-ink border border-transparent'
+              }`}
+            >
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-calm-slate/20 text-calm-slate-dark font-bold text-xs">
+                <Users className="w-3.5 h-3.5" />
+              </div>
+              <div className="text-left">
+                <span className="font-semibold text-xs font-sans tracking-tight block">
+                  Família Unificada
+                </span>
+                <span className="text-[10px] text-ink-muted font-normal block">
+                  Todos os filhos
+                </span>
+              </div>
+            </button>
+
+            {/* Quick Add Child Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setChildToEdit(null);
+                setIsProfileModalOpen(true);
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-2xl border border-dashed border-warm-peach text-warm-terracotta-dark bg-warm-peach/20 hover:bg-warm-peach/50 transition-all text-xs font-semibold shrink-0 shadow-warm-sm"
+              title="Cadastrar novo filho(a)"
+            >
+              <Plus className="w-3.5 h-3.5 text-warm-terracotta" />
+              <span>+ Filho(a)</span>
+            </button>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-1.5 text-xs text-ink-muted font-serif italic pr-1">
+            <Sparkles className="w-3.5 h-3.5 text-warm-terracotta" />
+            <span>Filtro Instantâneo</span>
+          </div>
+        </div>
       </div>
 
       {/* 2. Executive Stat Pills Bar (O Dia em Números) */}
@@ -493,6 +671,32 @@ export const TodayView: React.FC<Props> = ({ onOpenSOS, onNavigateTab }) => {
         </div>
       </div>
 
+      {/* Child Profile Modal (Criar / Editar) */}
+      <ChildProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        initialChild={childToEdit}
+        onSave={handleSaveChild}
+        onDelete={(id) => deleteChild(id)}
+      />
+
+      {/* Family Manager Overview Modal */}
+      <FamilyManagerModal
+        isOpen={isFamilyManagerOpen}
+        onClose={() => setIsFamilyManagerOpen(false)}
+        childrenList={children}
+        selectedChildId={selectedChildId}
+        onSelectChild={(id) => setSelectedChildId(id)}
+        onOpenCreateChild={() => {
+          setChildToEdit(null);
+          setIsProfileModalOpen(true);
+        }}
+        onOpenEditChild={(child) => {
+          setChildToEdit(child);
+          setIsProfileModalOpen(true);
+        }}
+        onDeleteChild={(id) => deleteChild(id)}
+      />
     </div>
   );
 };

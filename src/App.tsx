@@ -36,13 +36,15 @@ const AppContent: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-5 sm:py-8 space-y-5 sm:space-y-7">
         
-        {/* Child Context Selector (Always Accessible) */}
-        <section aria-label="Seletor de Perfil Infantil">
-          <ChildContextSelector
-            selectedChildId={selectedChildId}
-            onSelectChild={(id) => setSelectedChildId(id)}
-          />
-        </section>
+        {/* Child Context Selector (Unificado diretamente no Hero Card da Visão Hoje) */}
+        {activeTab !== 'today' && (
+          <section aria-label="Seletor de Perfil Infantil">
+            <ChildContextSelector
+              selectedChildId={selectedChildId}
+              onSelectChild={(id) => setSelectedChildId(id)}
+            />
+          </section>
+        )}
 
         {/* Dynamic Views Rendering */}
         <section className="transition-all duration-300">

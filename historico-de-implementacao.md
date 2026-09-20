@@ -4,6 +4,21 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 6: Unificação do Cabeçalho Herói & Seletor de Perfil na Visão Hoje
+**Data:** 20/09/2026  
+**Status:** Concluído e Validado
+
+### 1. Eliminação da Redundância Visual e Fusão de Blocos
+- **Problema Apontado no Áudio:** Havia dois cartões brancos grandes empilhados verticalmente no topo da Visão Hoje (o seletor de perfil e o cartão de cumprimento da rotina com o botão SOS), ocupando espaço desnecessário e duplicando informações.
+- **Solução Arquitetural & UX:**
+  - **Cartão Herói Unificado (`TodayView.tsx`):**
+    - **Linha Superior:** Badge do Módulo (*Visão Hoje • Hub Central*), data completa formatada por extenso, botão de **Ficha SOS (1 toque)** e botão **Gerenciar Família (⚙️)**.
+    - **Área Central:** Avatar dinâmico do perfil ativo com iniciais e cor do tema, título principal (*"Dia de Helena"* ou *"Rotina Integrada da Família"*), resumo de idade e série, e subtítulo acolhedor.
+    - **Barra Inferior Integrada de Seleção:** Pílulas táteis de alternância de filhos (*Helena*, *Mateo*, *Família Unificada*, *+ Filho(a)* com botões de edição rápida `✏️`), em uma linha harmoniosa com divisória suave, mantendo todos os controles em menos de 2 cliques.
+  - **Otimização no `App.tsx`:** O seletor avulso foi removido na aba Hoje, sendo preservado apenas nas telas secundárias onde aplicável.
+
+---
+
 ## 📅 Registro 5: Melhoria Integral da Área de Saúde (Receitas Médicas, Sincronização com o Cofre, Notificações & Google Calendar)
 **Data:** 20/09/2026  
 **Status:** Concluído e Validado
