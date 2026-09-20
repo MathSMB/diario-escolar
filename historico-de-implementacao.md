@@ -4,6 +4,21 @@ Este documento registra o histórico completo de planos de implementação, deci
 
 ---
 
+## 📅 Registro 7: Otimização da Barra de Navegação (Eliminação de Rolagem Horizontal)
+**Data:** 20/09/2026  
+**Status:** Concluído e Validado
+
+### 1. Eliminação da Rolagem Horizontal no Menu Superior (`PlannerNavbar.tsx`)
+- **Problema Apontado no Áudio:** As abas do menu inicial possuíam títulos longos e estavam em um contêiner com rolagem horizontal (`overflow-x-auto`), exigindo que o usuário rolasse lateralmente para ver seções como *Memórias* e *Cofre*.
+- **Solução Arquitetural & UX:**
+  - **Títulos Concisos & Poéticos:** Substituição de títulos compostos por nomes limpos e elegantes (*"Hoje"*, *"Educação"*, *"Saúde"*, *"Tarefas"*, *"Atividades"*, *"Memórias"*, *"Cofre"*).
+  - **Layout Responsivo Inteligente:**
+    - Em telas desktop (≥ 1024px): Todos os 7 itens cabem lado a lado de forma centralizada e sem qualquer barra de rolagem.
+    - Em laptops e telas compactas (< 1024px): Exibe as 4 abas prioritárias diárias (*Hoje, Educação, Saúde, Tarefas*) + menu dropdown elegante *"Mais ▾"* com as seções de arquivo (*Atividades, Memórias, Cofre*).
+    - Em dispositivos móveis (< 768px): Navegação inferior ergonômica (*Bottom Tab Bar*) com área de toque no polegar (*Thumb Zone*).
+
+---
+
 ## 📅 Registro 6: Unificação do Cabeçalho Herói & Seletor de Perfil na Visão Hoje
 **Data:** 20/09/2026  
 **Status:** Concluído e Validado
